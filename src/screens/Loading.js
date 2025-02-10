@@ -76,8 +76,7 @@ const Loading = ({ theme = "light" }) => {
               <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
               <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
               <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
-              <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
-            </View>
+.            </View>..
 
             <View style={styles.loadingContainer}>
               <Text style={styles.loadingText}> We are getting things ready for you....</Text>
