@@ -1,132 +1,223 @@
-import React, { useEffect, useRef } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, ScrollView, Animated } from "react-native";
-import { useWindowDimensions } from "react-native";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-import { useNavigation } from '@react-navigation/native';
-import Navbar from './Navbar';
+import React, { useState, useRef } from "react";
+import { 
+  Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Image, ScrollView 
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import Navbar from "./Navbar";
+
+const { width } = Dimensions.get("window");
+
+const newsData = [
+  {
+    id: "1",
+    title: "Elon Musk on Recession Risk",
+    description: "Elon Musk shares his views on the upcoming economic downturn and its global impact.",
+  },
+  {
+    id: "2",
+    title: "Tech Industry Layoffs",
+    description: "Several tech companies are cutting jobs amid economic uncertainty. Here's what you need to know.",
+  },
+  {
+    id: "3",
+    title: "AI Takes Over Jobs?",
+    description: "Experts weigh in on the impact of AI on job security across multiple industries.",
+  },
+];
 
 const Home = () => {
-  const { width } = useWindowDimensions();
-  const isMobile = width < 778; 
-  const [selectedNav, setSelectedNav] = React.useState('Home'); 
-
   const navigation = useNavigation();
-  const handleNavClick = (section) => {
-    setSelectedNav(section);
-    navigation.navigate(section);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef(null);
+
+  const handleScroll = (event) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / (width * 0.9)); // Adjust index based on card width
+    setCurrentIndex(index);
   };
 
-  // Auto-scrolling setup
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const scrollViewRef = useRef(null);
-
-  useEffect(() => {
-    const scroll = () => {
-      Animated.timing(scrollX, {
-        toValue: 1000, // Adjust based on text length
-        duration: 15000, // Adjust scrolling speed
-        useNativeDriver: true,
-      }).start(() => {
-        scrollX.setValue(0); // Reset scroll after completion
-        scroll(); // Restart scrolling
-      });
-    };
-    scroll();
-  }, []);
+  const renderNewsItem = ({ item }) => (
+    <View style={styles.newsCard}>
+      <Text style={styles.newsTitle}>{item.title}</Text>
+      <Text style={styles.newsDescription}>{item.description}</Text>
+    </View>
+  );
 
   return (
-    <ScrollView style={styles.frameParent}>
-
-      {/* Auto Scrolling Text in a Card */}
-      <View style={styles.cardContainer}>
-        <Animated.ScrollView
-          ref={scrollViewRef}
+    <ScrollView style={styles.container}>
+      {/* News Section */}
+      <View style={styles.newsContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={newsData}
           horizontal
+          pagingEnabled
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          style={{ transform: [{ translateX: scrollX }] }}
-        >
-          <Text style={styles.autoScrollText}>
-          The Big Take 
-          Elon Musk Sounds Odd on Recession Risk, Twitter Deal and Trump          </Text>
-          <Text style={styles.autoScrollText}>
-            Curabitur volutpat libero sit amet ligula aliquet, ac tempor dui posuere. Duis tincidunt sit amet orci at tempor. 
-          </Text>
-          <Text style={styles.autoScrollText}>
-            Praesent et lectus ac magna tincidunt suscipit ut in nulla. Suspendisse potenti. Phasellus ac vestibulum ante, eget facilisis lorem.
-          </Text>
-        </Animated.ScrollView>
+          onScroll={handleScroll}
+          renderItem={renderNewsItem}
+          keyExtractor={(item) => item.id}
+          snapToInterval={width * 0.9} // Ensures cards snap to the correct position
+          decelerationRate="fast"
+        />
+
+        {/* Pagination Dots */}
+        <View style={styles.pagination}>
+          {newsData.map((_, index) => (
+            <View key={index} style={[styles.dot, currentIndex === index && styles.activeDot]} />
+          ))}
+        </View>
+      </View>
+
+      {/* Welcome Section */}
+      <View style={styles.welcomeSection}>
+        <Text style={styles.welcome}>Welcome,</Text>
+        <Text style={styles.username}>Jeshwant</Text>
+        <Text style={styles.journeyText}>Begin your journey here</Text>
+      </View>
+
+      {/* Scrollable Image Section */}
+      <View style={styles.imageSection}>
+        <Image
+           source={require('../assets/meditation.png')}
+          style={styles.scrollImage}
+        />
+      </View>
+
+      {/* Explore Section */}
+      <View style={styles.exploreSection}>
+        <Text style={styles.exploreText}>Explore</Text>
+        <View style={styles.cardContainer}>
+          <View style={styles.exploreCard}>
+            <Text style={styles.cardTitle}>Yoga Classes</Text>
+            <Text style={styles.cardDescription}>Join live or recorded yoga sessions.</Text>
+          </View>
+          <View style={styles.exploreCard}>
+            <Text style={styles.cardTitle}>Meditation</Text>
+            <Text style={styles.cardDescription}>Relax with guided meditations.</Text>
+          </View>
+          <View style={styles.exploreCard}>
+            <Text style={styles.cardTitle}>Healthy Living</Text>
+            <Text style={styles.cardDescription}>Tips for a healthier lifestyle.</Text>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  lotusIcon: {
-    width: 40,
-    height: 50,
-    position: 'absolute',
-    left: -60,
-    marginTop: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    backgroundColor: "#675987",
-    borderRadius: 29,
-    marginTop: 20,
-    paddingLeft: 60,
-    position: 'relative',
-    height: 50,
-    marginLeft: 50,
-    width: 280,
-    justifyContent: 'space-between',
-  },
-  navContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+  container: {
     flex: 1,
-    width: '70%',
-    marginLeft: -30,
   },
-  navItem: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    justifyContent: 'center',
+  newsContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    height: 240,
   },
-  selectedNavItem: {
-    backgroundColor: '#fff',
-    borderRadius: 19,
-  },
-  navText: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  selectedNavText: {
-    color: '#000',
-  },
-  cardContainer: {
-    borderRadius: 15,
-    padding: 15,
-    marginHorizontal: 20,
-    marginVertical: 10,
+  newsCard: {
+    width: width * 0.9, // Adjusted width for better fit
+    height: width * 0.5, // Adjust the height to avoid cut-off
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 30,
+    marginHorizontal: 10,
+    elevation: 15,
+    justifyContent: 'center', // Ensures content is centered within the card
+
+    // iOS shadow properties
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    overflow: "hidden",
+    shadowOffset: { width: 0, height: 2 }, // Slight shadow below
+    shadowOpacity: 0.9, // Soft shadow intensity
+    shadowRadius: 5, // Softens the shadow
+
+    // Android shadow properties
+    elevation: 10, // Elevation for shadow below on Android
   },
-  scrollContent: {
+  
+  newsTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  newsDescription: {
+    fontSize: 14,
+    color: "#666",
+  },
+  pagination: {
     flexDirection: "row",
+    marginTop: 10,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    marginHorizontal: 5,
+  },
+  activeDot: {
+    backgroundColor: "#007AFF",
+  },
+  welcomeSection: {
+    marginTop: 30,
+    paddingHorizontal: 20,
+  },
+  welcome: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  username: {
+    fontSize: 22,
+    fontWeight: "bold",
+  },
+  journeyText: {
+    fontSize: 16,
+    color: "#555",
+    marginTop: 5,
+  },
+  imageSection: {
+    marginTop: 20,
     alignItems: "center",
   },
-  autoScrollText: {
+  scrollImage: {
+    width: width * 0.9,
+    height: 200,
+    borderRadius: 15,
+    marginBottom: 20,
+  },
+  exploreSection: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+  exploreText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  cardContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  exploreCard: {
+    width: width * 0.28,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  cardTitle: {
     fontSize: 16,
-    paddingHorizontal: 10,
-    color: "#333",
-    width: 300,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  cardDescription: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 5,
   },
 });
 
