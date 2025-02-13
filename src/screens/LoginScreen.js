@@ -1,20 +1,19 @@
-import React from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
-import { useDispatch } from "react-redux";
-import { login } from "../redux/authSlice";
 import { useNavigation } from "@react-navigation/native";
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 // Import SVG icons
 import Ellipse1 from "../assets/Ellipse1.svg";
@@ -26,20 +25,58 @@ import GoogleIcon from "../assets/google-color_svgrepo.com.svg";
 
 // Import themes
 import { lightTheme, darkTheme } from "../styles/themes.js"; 
+import { useDispatch } from 'react-redux';
+import { googleLogin } from '../redux/authSlice.js'; // Import your action
 
-const { width, height } = Dimensions.get("window");
+
+GoogleSignin.configure({
+  webClientId: '968763437649-9cq1vtnj2ssag10u0hke0mgmjaqn5i4q.apps.googleusercontent.com',
+  iosClientId: '968763437649-47ue230k96ni2d5shup0d4h213vd6s45.apps.googleusercontent.com',
+  scopes: ['profile', 'email'],
+  offlineAccess: true,
+  forceCodeForRefreshToken: true,
+});
 
 const Login = ({ theme = "light" }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 768;
   const { control, handleSubmit } = useForm();
-  const dispatch = useDispatch();
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();  // Hook to access dispatch function
 
 
+  const GoogleLogin = async () => {
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+    console.log('User Info:', userInfo);  // Log user info to verify structure
+    return userInfo;
+  };
+  
+  const handleGoogleSignIn = async () => {
+    try {
+      const response = await GoogleLogin();
+      const { email, idToken } = response.data.user;  // Access user info properly
+  
+      // Dispatch action to send data to API
+      await dispatch(googleLogin({ email, idToken }));
+  
+      // Navigate on success
+      if (response.data.user) navigation.navigate('Register');
+    } catch (error) {
+      console.error('Login Error:', error);
+    }
+  };
+  
+  const handlePhoneNumber = () =>{
+    try{
 
-  // Choose the theme based on the passed prop or context
+    }catch{
+
+    }
+  }
+  // Choose the theme based on the prop
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-
-  const isTablet = width >= 768;  // Check if the device is a tablet (width >= 768)
 
   return (
     <LinearGradient
@@ -55,31 +92,30 @@ const Login = ({ theme = "light" }) => {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
+
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
-              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
+            <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
               <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
               <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
               <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
-              <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
+              <LotusYoga width={isTablet ? 200 : 120} height={isTablet ? 300 : 180} style={styles.lotusIcon} />
             </View>
 
             {/* Login Form */}
             <View style={styles.formContainer}>
-              <Text style={[styles.loginText, { color: currentTheme.textColor }]}>
+              <Text style={[styles.loginText, { fontSize: isTablet ? 22 : 18, color: currentTheme.textColor }]}>
                 Login with your Phone Number
               </Text>
 
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, { width: isTablet ? "80%" : "100%" }]}>
                 <Controller
                   control={control}
                   name="username"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      style={[styles.input, ]}
+                      style={styles.input}
                       placeholder="Phone number"
-                      fontFamily="Oranienbaum-Regular"
-
                       placeholderTextColor="#9f9e9e"
                       onChangeText={onChange}
                       value={value}
@@ -89,24 +125,23 @@ const Login = ({ theme = "light" }) => {
                 />
               </View>
 
-              {/* Buttons - Aligned Horizontally */}
+              {/* Buttons */}
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
-                  onPress={() => navigation.navigate("OtpScreen")}
+                  onPress={handleSubmit(handlePhoneNumber)}
                 >
-                  <Text style={[styles.buttonText]}>
-                    Verify with Mobile
-                  </Text>
+                  <Text style={styles.buttonText}>Verify with Mobile</Text>
                 </TouchableOpacity>
 
                 <Text style={[styles.orText, { color: currentTheme.orTextColor }]}>- or -</Text>
 
-                <TouchableOpacity style={[styles.button, styles.googleButton, { backgroundColor: currentTheme.googleButtonBackground }]}>
+                <TouchableOpacity 
+                  style={[styles.button, styles.googleButton, { backgroundColor: currentTheme.googleButtonBackground }]}
+                  onPress={handleGoogleSignIn}
+                >
                   <GoogleIcon width={25} height={25} />
-                  <Text style={[styles.googleText, { color: currentTheme.googleButtonTextColor }]}>
-                    Sign in with Google
-                  </Text>
+                  <Text style={styles.googleText}>Sign in with Google</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -127,35 +162,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 50, // Add padding at the bottom to make space for buttons
+    paddingBottom: 50,
   },
   container: {
-    width: width * 0.9,
+    width: "90%",
     alignItems: "center",
     gap: 40,
-    paddingTop: 20, // Add some top padding for better spacing
+    paddingTop: 20,
   },
   svgContainer: {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: -10, // Reduce space between Ellipse4 and LotusYoga
-  },
-  svgItem: {
-    marginBottom: 20,
+    marginBottom: -10,
   },
   lotusIcon: {
     marginTop: -20,
   },
-
   formContainer: {
     alignItems: "center",
     width: "100%",
     marginTop: -10,
   },
   loginText: {
-    fontSize: 18,
-    fontFamily: "Oranienbaum-Regular",
     textAlign: "center",
     marginBottom: 20,
   },
@@ -167,7 +196,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     flexDirection: "row",
     alignItems: "center",
-    
   },
   input: {
     fontSize: 15,
@@ -178,7 +206,6 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: "column",
-    justifyContent: "center",
     alignItems: "center",
     width: "100%",
     marginTop: 20,
@@ -190,22 +217,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  mobileButton: {
-    borderWidth: 1,
-    borderColor: "#000",
-    marginBottom: 10,
-  },
-  buttonText: {
-    fontSize: 15,
-    textAlign: "center",
-    fontFamily: "Oranienbaum-Regular",
-
-  },
-  orText: {
-    fontSize: 16,
-    textAlign: "center",
-    marginVertical: 10,
-  },
   googleButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -215,7 +226,11 @@ const styles = StyleSheet.create({
   },
   googleText: {
     fontSize: 15,
-    fontFamily: "Oranienbaum-Regular",
+    color: '#fff',
+
+  },
+  svgItem: {
+    marginBottom: 20,
   },
 });
 

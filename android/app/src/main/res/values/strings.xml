@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">yogaApp</string>
+        <string name="default_web_client_id">1013989505768-o5p4a52fjm2fkjm9k95h6n11g2v5usab.apps.googleusercontent.com</string>
+
 </resources>

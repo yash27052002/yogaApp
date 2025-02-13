@@ -1,22 +1,11 @@
-import { createStore } from 'redux';
+// store.js
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './authSlice'; // assuming the slice is in the same directory
 
-// Example reducer (you can customize this)
-const initialState = {
-  isAuthenticated: false,
-};
-
-const reducer = (state = initialState, action) => {
-  switch (action.type) {
-    case 'LOGIN':
-      return { ...state, isAuthenticated: true };
-    case 'LOGOUT':
-      return { ...state, isAuthenticated: false };
-    default:
-      return state;
-  }
-};
-
-// Create Redux store
-const store = createStore(reducer);
+const store = configureStore({
+  reducer: {
+    auth: authReducer,
+  },
+});
 
 export default store;

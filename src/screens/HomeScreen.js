@@ -44,6 +44,23 @@ const Home = () => {
 
   return (
     <ScrollView style={styles.container}>
+
+<View style={styles.welcomeSection}>
+        <Text style={styles.welcome}>Welcome,</Text>
+        <Text style={styles.username}>Jeshwant</Text>
+        <Text style={styles.journeyText}>Begin your journey here</Text>
+      </View>
+      <View style={styles.cardRow}>
+    <View style={styles.welcomeCard}>
+      <Text style={styles.cardTitle}>Your flight in</Text>
+      <Text style={styles.cardDescription}>00:12:54</Text>
+    </View>
+    <View style={styles.welcomeCard2}>
+      <Text style={styles.cardTitle}>Today, +0HRS</Text>
+      <Text style={styles.cardDescription}>28 °C     12:54PM</Text>
+
+    </View>
+  </View>
       {/* News Section */}
       <View style={styles.newsContainer}>
         <FlatList
@@ -68,11 +85,7 @@ const Home = () => {
       </View>
 
       {/* Welcome Section */}
-      <View style={styles.welcomeSection}>
-        <Text style={styles.welcome}>Welcome,</Text>
-        <Text style={styles.username}>Jeshwant</Text>
-        <Text style={styles.journeyText}>Begin your journey here</Text>
-      </View>
+
 
       {/* Scrollable Image Section */}
       <View style={styles.imageSection}>
@@ -107,6 +120,35 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  cardRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 15,
+  },
+  welcomeCard: {
+    width: width * 0.43,
+    backgroundColor: "#675987",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  welcomeCard2: {
+    width: width * 0.43,
+    backgroundColor: "#051650",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
   newsContainer: {
     alignItems: "center",
@@ -212,10 +254,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+    color:'#fff'
   },
   cardDescription: {
     fontSize: 12,
-    color: "#666",
+    color: "#fff",
     textAlign: "center",
     marginTop: 5,
   },

@@ -1,49 +1,44 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// Define API endpoint
-const API_URL = "https://example.com/api/login"; // Replace with actual API endpoint
+// Async thunk for Google login API
+export const googleLogin = createAsyncThunk(
+  'auth/googleLogin',
+  async ({ email, idToken }, { rejectWithValue }) => {
+    try {
+      const response = await fetch('https://9ecc4fee-d048-4e46-b001-e5b356e78e48.mock.pstmn.io/userRegister', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, idToken }),
+      });
 
-// Async function to handle login
-export const loginUser = createAsyncThunk("auth/loginUser", async (phoneNumber, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(API_URL, { phone: phoneNumber });
-    return response.data; // Expecting OTP or a token in response
-  } catch (error) {
-    return rejectWithValue(error.response?.data || "Something went wrong");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Login failed');
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-});
+);
 
 const authSlice = createSlice({
-  name: "auth",
-  initialState: {
-    user: null,
-    isLoading: false,
-    error: null,
-  },
-  reducers: {
-    logout: (state) => {
-      state.user = null;
-      state.isLoading = false;
-      state.error = null;
-    },
-  },
+  name: 'auth',
+  initialState: { user: null, loading: false, error: null },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
+      .addCase(googleLogin.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload; // Store user data or OTP response
+      .addCase(googleLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
       })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
+      .addCase(googleLogin.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { logout } = authSlice.actions;
 export default authSlice.reducer;

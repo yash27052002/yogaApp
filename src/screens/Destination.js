@@ -10,13 +10,11 @@ import {
   Platform,
   Modal,
   FlatList,
+  TextInput,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation } from '@react-navigation/native';
-
-
-// Import SVG icons
 import Ellipse1 from "../assets/Ellipse1.svg";
 import Ellipse2 from "../assets/Ellipse2.svg";
 import Ellipse3 from "../assets/Ellipse3.svg";
@@ -29,31 +27,36 @@ import { lightTheme, darkTheme } from "../styles/themes.js";
 const { width, height } = Dimensions.get("window");
 
 const Destination = ({ theme = "light" }) => {
-
-    const navigation = useNavigation();
-
+  const navigation = useNavigation();
   const { control, handleSubmit, setValue } = useForm();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedReligion, setSelectedReligion] = useState("Select Destination");
+  
+  // Destination Dropdown States
+  const [destinationModalVisible, setDestinationModalVisible] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState("Select Destination");
+  const [searchText, setSearchText] = useState(""); // Search input state
 
-  // List of religions for dropdown
-  const religions = ["Hinduism", "Christianity", "Islam", "Buddhism", "Sikhism", "Jainism", "Others"];
+  // List of destinations
+  const destinations = [
+    "New York", "London", "Tokyo", "Paris", "Dubai", "Singapore", "Rome", "Bangkok", "Sydney"
+  ];
 
-  // Function to handle selection
-  const handleSelectReligion = (religion) => {
-    setSelectedReligion(religion);
-    setValue("religion", religion); // Set value in react-hook-form
-    setModalVisible(false);
+  // Filter destinations based on search input
+  const filteredDestinations = destinations.filter((destination) =>
+    destination.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const handleSelectDestination = (destination) => {
+    setSelectedDestination(destination);
+    setValue("destination", destination); // Set value in react-hook-form
+    setDestinationModalVisible(false);
+    setSearchText(""); // Reset search text
   };
 
-  // Choose the theme based on the passed prop or context
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
+  const isTablet = width >= 768;
 
-  const isTablet = width >= 768; // Check if the device is a tablet (width >= 768)
-
-  // onSubmit function to handle form submission
   const onSubmit = (data) => {
-    console.log("Selected Religion:", data.religion);
+    console.log("Selected Destination:", data.destination);
   };
 
   return (
@@ -64,40 +67,48 @@ const Destination = ({ theme = "light" }) => {
       useAngle={true}
       angle={180}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
-            {/* SVG Icons */}
-            <View style={styles.svgContainer}>
+          <View style={styles.svgContainer}>
               <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
               <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
               <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
               <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
               <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
             </View>
-
-            {/* Custom Dropdown */}
+            
+            {/* Destination Dropdown */}
             <View style={styles.inputContainer}>
-              <TouchableOpacity style={styles.dropdown} onPress={() => setModalVisible(true)}>
-                <Text style={styles.dropdownText}>{selectedReligion}</Text>
+              <TouchableOpacity style={styles.dropdown} onPress={() => setDestinationModalVisible(true)}>
+                <Text style={styles.dropdownText}>{selectedDestination}</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Dropdown Modal */}
-            <Modal transparent={true} visible={modalVisible} animationType="fade">
-              <TouchableOpacity style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+            {/* Destination Modal with Search */}
+            <Modal transparent={true} visible={destinationModalVisible} animationType="fade">
+              <TouchableOpacity style={styles.modalOverlay} onPress={() => setDestinationModalVisible(false)}>
                 <View style={styles.modalContainer}>
+                  
+                  {/* Search Bar */}
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search Destination..."
+                    placeholderTextColor="#888"
+                    value={searchText}
+                    onChangeText={(text) => setSearchText(text)}
+                  />
+
+                  {/* Destination List */}
                   <FlatList
-                    data={religions}
+                    data={filteredDestinations}
                     keyExtractor={(item) => item}
                     renderItem={({ item }) => (
-                      <TouchableOpacity style={styles.option} onPress={() => handleSelectReligion(item)}>
+                      <TouchableOpacity style={styles.option} onPress={() => handleSelectDestination(item)}>
                         <Text style={styles.optionText}>{item}</Text>
                       </TouchableOpacity>
                     )}
+                    ListEmptyComponent={<Text style={styles.noResults}>No destinations found</Text>}
                   />
                 </View>
               </TouchableOpacity>
@@ -106,7 +117,7 @@ const Destination = ({ theme = "light" }) => {
             {/* Submit Button */}
             <TouchableOpacity
               style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]}
-              onPress={() => navigation.navigate("BoardingTime")}
+              onPress={handleSubmit(onSubmit)}
             >
               <Text style={[styles.buttonText]}>Submit</Text>
             </TouchableOpacity>
@@ -181,6 +192,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
+  searchInput: {
+    height: 40,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    paddingHorizontal: 10,
+    fontSize: 16,
+    marginBottom: 10,
+  },
   option: {
     padding: 12,
     borderBottomWidth: 1,
@@ -189,6 +208,11 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     color: "#000",
+  },
+  noResults: {
+    padding: 12,
+    textAlign: "center",
+    color: "#888",
   },
   button: {
     width: "100%",
