@@ -1,18 +1,9 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Modal,
-  FlatList,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { useNavigation } from "@react-navigation/native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 // Import SVG icons
 import Ellipse1 from "../assets/Ellipse1.svg";
@@ -20,54 +11,49 @@ import Ellipse2 from "../assets/Ellipse2.svg";
 import Ellipse3 from "../assets/Ellipse3.svg";
 import Ellipse4 from "../assets/Ellipse4.svg";
 import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-import { useNavigation } from '@react-navigation/native';
-
 
 // Import themes
 import { lightTheme, darkTheme } from "../styles/themes.js";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const BoardingTime = ({ theme = "light" }) => {
+  const navigation = useNavigation();
+  const { control, handleSubmit, setValue, getValues } = useForm({
+    defaultValues: {
+      boardingTime: new Date(), // Set default to current time
+    },
+  });
 
-    const navigation = useNavigation();
+  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
-    const { control, handleSubmit, setValue } = useForm();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedReligion, setSelectedReligion] = useState("Select Boarding Time");
+  // Set the initial boarding time when the component mounts
+  useEffect(() => {
+    setValue("boardingTime", selectedTime); // Ensure the form state updates
+  }, [selectedTime]);
 
-  // List of religions for dropdown
-  const religions = ["Hinduism", "Christianity", "Islam", "Buddhism", "Sikhism", "Jainism", "Others"];
-
-  // Function to handle selection
-  const handleSelectReligion = (religion) => {
-    setSelectedReligion(religion);
-    setValue("religion", religion); // Set value in react-hook-form
-    setModalVisible(false);
+  // Function to handle time change
+  const handleTimeChange = (event, selectedDate) => {
+    if (selectedDate) {
+      setShowTimePicker(false);
+      setSelectedTime(selectedDate);
+      setValue("boardingTime", selectedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })); // Update form value
+    }
   };
-
-  // Choose the theme based on the passed prop or context
-  const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-
-  const isTablet = width >= 768; // Check if the device is a tablet (width >= 768)
 
   // onSubmit function to handle form submission
   const onSubmit = (data) => {
-    console.log("Selected Religion:", data.religion);
+    console.log("Selected Boarding Time:", );
   };
+  
+
+  const currentTheme = theme === "dark" ? darkTheme : lightTheme;
+  const isTablet = width >= 768;
 
   return (
-    <LinearGradient
-      style={styles.login}
-      locations={[0, 1]}
-      colors={["#dacaff", "#f4ffe1"]}
-      useAngle={true}
-      angle={180}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
+    <LinearGradient style={styles.login} locations={[0, 1]} colors={["#dacaff", "#f4ffe1"]} useAngle={true} angle={180}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
             {/* SVG Icons */}
@@ -79,36 +65,31 @@ const BoardingTime = ({ theme = "light" }) => {
               <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
             </View>
 
-            {/* Custom Dropdown */}
+            {/* Time Selector */}
             <View style={styles.inputContainer}>
-              <TouchableOpacity style={styles.dropdown} onPress={() => setModalVisible(true)}>
-                <Text style={styles.dropdownText}>{selectedReligion}</Text>
+              <TouchableOpacity style={styles.dropdown} onPress={() => setShowTimePicker(true)}>
+                <Text style={styles.dropdownText}>
+                  {selectedTime
+                    ? selectedTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                    : "Select Time"}
+                </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Dropdown Modal */}
-            <Modal transparent={true} visible={modalVisible} animationType="fade">
-              <TouchableOpacity style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-                <View style={styles.modalContainer}>
-                  <FlatList
-                    data={religions}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity style={styles.option} onPress={() => handleSelectReligion(item)}>
-                        <Text style={styles.optionText}>{item}</Text>
-                      </TouchableOpacity>
-                    )}
-                  />
-                </View>
-              </TouchableOpacity>
-            </Modal>
+            {/* Time Picker */}
+            {showTimePicker && (
+              <DateTimePicker
+                value={selectedTime}
+                mode="time"
+                is24Hour={true}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={handleTimeChange}
+              />
+            )}
 
             {/* Submit Button */}
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]}
-              onPress={() => navigation.navigate("Preferance")}
-                          >
-              <Text style={[styles.buttonText]}>Submit</Text>
+            <TouchableOpacity style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]} onPress={handleSubmit(onSubmit)}>
+              <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -117,7 +98,6 @@ const BoardingTime = ({ theme = "light" }) => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   login: {
     flex: 1,
@@ -151,7 +131,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 50,
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: "#fff",
     borderRadius: 25,
     flexDirection: "row",
     alignItems: "center",
@@ -164,29 +144,9 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
+    borderColor: "#fff",
   },
   dropdownText: {
-    fontSize: 16,
-    color: "#000",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 10,
-  },
-  option: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  optionText: {
     fontSize: 16,
     color: "#000",
   },

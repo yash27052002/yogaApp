@@ -69,11 +69,7 @@ const Login = ({ theme = "light" }) => {
   };
   
   const handlePhoneNumber = () =>{
-    try{
-
-    }catch{
-
-    }
+    navigation.navigate('OtpScreen');
   }
   // Choose the theme based on the prop
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;

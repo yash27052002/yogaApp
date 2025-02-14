@@ -14,6 +14,8 @@ import {
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
+import { useDispatch } from "react-redux";
+
 import { useNavigation } from '@react-navigation/native';
 import Ellipse1 from "../assets/Ellipse1.svg";
 import Ellipse2 from "../assets/Ellipse2.svg";
@@ -23,12 +25,15 @@ import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
 
 // Import themes
 import { lightTheme, darkTheme } from "../styles/themes.js";
+import { setDestination, setReligion } from "../redux/formSlice.js";
 
 const { width, height } = Dimensions.get("window");
 
 const Destination = ({ theme = "light" }) => {
   const navigation = useNavigation();
   const { control, handleSubmit, setValue } = useForm();
+  const dispatch = useDispatch();
+
   
   // Destination Dropdown States
   const [destinationModalVisible, setDestinationModalVisible] = useState(false);
@@ -55,8 +60,11 @@ const Destination = ({ theme = "light" }) => {
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
   const isTablet = width >= 768;
 
-  const onSubmit = (data) => {
-    console.log("Selected Destination:", data.destination);
+  const onSubmit = async (data) => {
+    console.log("Selected Destination:", data);
+    navigation.navigate('BoardingTime');
+
+    await dispatch(setReligion(data.destination))
   };
 
   return (

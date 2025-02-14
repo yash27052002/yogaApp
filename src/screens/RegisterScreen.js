@@ -13,7 +13,7 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { login } from "../redux/authSlice";
+import { setUserData } from "../redux/formSlice"; // Ensure setUserData is imported correctly
 import { useNavigation } from "@react-navigation/native";
 
 // Import SVG icons
@@ -22,7 +22,6 @@ import Ellipse2 from "../assets/Ellipse2.svg";
 import Ellipse3 from "../assets/Ellipse3.svg";
 import Ellipse4 from "../assets/Ellipse4.svg";
 import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-import GoogleIcon from "../assets/google-color_svgrepo.com.svg";
 
 // Import themes
 import { lightTheme, darkTheme } from "../styles/themes.js"; 
@@ -34,7 +33,20 @@ const RegisterScreen = ({ theme = "light" }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
+  // Handle form submission
+  const handleContinue = async (data) => {
+    console.log('Navigating to Religion');
 
+    navigation.navigate('Religion');
+
+    console.log('Form Data:', data);
+  
+    // Await dispatch if it's async
+    await dispatch(setUserData(data)); 
+  
+  };
+  
+  
 
   // Choose the theme based on the passed prop or context
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
@@ -64,18 +76,19 @@ const RegisterScreen = ({ theme = "light" }) => {
               <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
             </View>
 
-            {/* Login Form */}
+            {/* Register Form */}
             <View style={styles.formContainer}>
               <Text style={[styles.loginText, { color: currentTheme.textColor }]}>
-              Enter your Name              </Text>
+                Enter your Name
+              </Text>
 
               <View style={styles.inputContainer}>
                 <Controller
                   control={control}
-                  name="username"
+                  name="name" // Ensure this matches the data you're collecting
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      style={[styles.input, ]}
+                      style={[styles.input]}
                       placeholder="Name"
                       placeholderTextColor="#9f9e9e"
                       onChangeText={onChange}
@@ -84,16 +97,18 @@ const RegisterScreen = ({ theme = "light" }) => {
                   )}
                 />
               </View>
+
               <Text style={[styles.loginText, { color: currentTheme.textColor }]}>
-              Enter your age              </Text>
+                Enter your Age
+              </Text>
 
               <View style={styles.inputContainer}>
                 <Controller
                   control={control}
-                  name="username"
+                  name="age"  // Ensure the name matches
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      style={[styles.input, ]}
+                      style={[styles.input]}
                       placeholder="Age"
                       placeholderTextColor="#9f9e9e"
                       onChangeText={onChange}
@@ -103,21 +118,17 @@ const RegisterScreen = ({ theme = "light" }) => {
                   )}
                 />
               </View>
-              
 
               {/* Buttons - Aligned Horizontally */}
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
-                  onPress={() => navigation.navigate("Religion")}
+                  onPress={handleSubmit(handleContinue)} // Corrected to use handleSubmit
                 >
                   <Text style={[styles.buttonText]}>
                     Continue
                   </Text>
                 </TouchableOpacity>
-
-
-
               </View>
             </View>
           </View>
@@ -173,7 +184,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 50,
     borderWidth: 1,
-    borderColor: "#000",
     borderRadius: 25,
     flexDirection: "row",
     alignItems: "center",
@@ -201,7 +211,6 @@ const styles = StyleSheet.create({
   },
   mobileButton: {
     borderWidth: 1,
-    borderColor: "#000",
     marginBottom: 10,
   },
   buttonText: {

@@ -74,8 +74,8 @@ const App = () => {
             <>
               <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="OtpScreen" component={OtpScreen} />
+                <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="Religion" component={Religion} />
                 <Stack.Screen name="Destination" component={Destination} />
                 <Stack.Screen name="BoardingTime" component={BoardingTime} />

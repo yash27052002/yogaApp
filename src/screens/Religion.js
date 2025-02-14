@@ -24,6 +24,8 @@ import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
 // Import themes
 import { lightTheme, darkTheme } from "../styles/themes.js";
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from "react-redux";
+import { setReligion } from "../redux/formSlice.js";
 
 const { width, height } = Dimensions.get("window");
 
@@ -32,6 +34,8 @@ const Religion = ({ theme = "light" }) => {
   const navigation = useNavigation();
 
   const { control, handleSubmit, setValue } = useForm();
+  const dispatch = useDispatch();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedReligion, setSelectedReligion] = useState("Select Religion");
 
@@ -39,11 +43,19 @@ const Religion = ({ theme = "light" }) => {
   const religions = ["Hinduism", "Christianity", "Islam", "Buddhism", "Sikhism", "Jainism", "Others"];
 
   // Function to handle selection
-  const handleSelectReligion = (religion) => {
+  const handleSelectReligion =  (religion) => {
+    
     setSelectedReligion(religion);
     setValue("religion", religion); // Set value in react-hook-form
     setModalVisible(false);
   };
+
+  const handleContinue = async (selectedReligion) =>{
+    navigation.navigate('Destination');
+    console.log("data passed to redux", selectedReligion)
+
+    await dispatch(setReligion(data)); 
+  }
 
   // Choose the theme based on the passed prop or context
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
@@ -105,8 +117,9 @@ const Religion = ({ theme = "light" }) => {
             {/* Submit Button */}
             <TouchableOpacity
               style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]}
-              onPress={() => navigation.navigate("Destination")}>
-              <Text style={[styles.buttonText]}>Submit</Text>
+              onPress={() => handleContinue(selectedReligion)}
+>
+              <Text style={[styles.buttonText]}>Continue</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
