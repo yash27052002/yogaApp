@@ -45,6 +45,7 @@ const BoardingTime = ({ theme = "light" }) => {
   // onSubmit function to handle form submission
   const onSubmit = (data) => {
     console.log("Selected Boarding Time:", );
+    navigation.navigate('Preferance');
   };
   
 

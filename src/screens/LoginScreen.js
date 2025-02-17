@@ -40,11 +40,11 @@ GoogleSignin.configure({
 const Login = ({ theme = "light" }) => {
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 768;
+  const isLandscape = width > height; // Detect landscape orientation
   const { control, handleSubmit } = useForm();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();  // Hook to access dispatch function
-
 
   const GoogleLogin = async () => {
     await GoogleSignin.hasPlayServices();
@@ -52,25 +52,26 @@ const Login = ({ theme = "light" }) => {
     console.log('User Info:', userInfo);  // Log user info to verify structure
     return userInfo;
   };
-  
+
   const handleGoogleSignIn = async () => {
     try {
       const response = await GoogleLogin();
       const { email, idToken } = response.data.user;  // Access user info properly
-  
+
       // Dispatch action to send data to API
       await dispatch(googleLogin({ email, idToken }));
-  
+
       // Navigate on success
       if (response.data.user) navigation.navigate('Register');
     } catch (error) {
       console.error('Login Error:', error);
     }
   };
-  
-  const handlePhoneNumber = () =>{
+
+  const handlePhoneNumber = () => {
     navigation.navigate('OtpScreen');
-  }
+  };
+
   // Choose the theme based on the prop
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
 
@@ -86,12 +87,15 @@ const Login = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+<ScrollView 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  keyboardShouldPersistTaps="handled"
+>
           <View style={styles.container}>
 
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
-            <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
+              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
               <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
               <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
               <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
@@ -156,10 +160,11 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start", // Ensure it starts from the top
     alignItems: "center",
-    paddingBottom: 50,
+    paddingBottom: 50, // Default padding
   },
+  
   container: {
     width: "90%",
     alignItems: "center",
@@ -223,7 +228,6 @@ const styles = StyleSheet.create({
   googleText: {
     fontSize: 15,
     color: '#fff',
-
   },
   svgItem: {
     marginBottom: 20,
