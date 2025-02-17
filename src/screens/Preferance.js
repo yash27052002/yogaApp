@@ -14,7 +14,7 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation } from '@react-navigation/native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import SVG icons
 import Ellipse1 from "../assets/Ellipse1.svg";
@@ -29,12 +29,11 @@ import { lightTheme, darkTheme } from "../styles/themes.js";
 const { width, height } = Dimensions.get("window");
 
 const Preferance = ({ theme = "light" }) => {
-
-    const navigation = useNavigation();
-
+  const navigation = useNavigation();
   const { control, handleSubmit, setValue } = useForm();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGods, setSelectedGods] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // List of god names
   const gods = [
@@ -65,9 +64,21 @@ const Preferance = ({ theme = "light" }) => {
 
   const isTablet = width >= 768; // Check if the device is a tablet (width >= 768)
 
+  const storeRandomCode = async () => {
+    const randomCode = Math.random().toString(36).substring(7); // Generates a random string
+    try {
+      await AsyncStorage.setItem('randomCode', randomCode);
+      console.log('Random code stored:', randomCode); // Optional: Log the stored code for confirmation
+    } catch (error) {
+      console.error('Error storing random code', error);
+    }
+  };
+
   // onSubmit function to handle form submission
-  const onSubmit = (data) => {
-    console.log("Selected Religion:", data.religion);
+  const onSubmit = () => {
+    storeRandomCode();
+    console.log("Selected Religion:", selectedGods);
+    setIsAuthenticated(true);
   };
 
   return (
@@ -118,7 +129,7 @@ const Preferance = ({ theme = "light" }) => {
             {/* Submit Button */}
             <TouchableOpacity
               style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]}
-              onPress={() => navigation.navigate("Home")}
+              onPress={handleSubmit(onSubmit)} // This will trigger onSubmit function
             >
               <Text style={[styles.buttonText]}>Submit</Text>
             </TouchableOpacity>

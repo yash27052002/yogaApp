@@ -9,6 +9,10 @@ import Ellipse4 from "../assets/Ellipse4.svg";
 import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
 import { lightTheme, darkTheme } from "../styles/themes.js"; 
 import { useNavigation } from '@react-navigation/native';
+import { verifyOtp } from '../redux/authSlice';
+import { useDispatch } from "react-redux";
+import axios from 'axios'; // Add this import at the top
+
 
 const { width, height } = Dimensions.get("window");
 
@@ -17,6 +21,8 @@ const OtpScreen = ({ theme = "light" }) => {
     const isTablet = width >= 768;  // Check if the device is a tablet (width >= 768)
     const isDesktop = width >= 1024; // Check if the device is a desktop (width >= 1024)
     const navigation = useNavigation();
+    const dispatch = useDispatch();
+
 
     // State to manage OTP input
     const [otp, setOtp] = useState(["", "", "", ""]);
@@ -26,15 +32,56 @@ const OtpScreen = ({ theme = "light" }) => {
 
     // Handle OTP input change
     const handleOtpChange = (text, index) => {
-        const newOtp = [...otp];
-        newOtp[index] = text.replace(/[^0-9]/g, ''); // Only allow numeric input
-        setOtp(newOtp);
-
-        // Move focus to the next input if the current one is filled
-        if (text && index < otp.length - 1) {
-            inputRefs.current[index + 1].focus();
+      const newOtp = [...otp];
+      
+      if (text === "") {
+        newOtp[index] = ""; // Clear current field
+    
+        // Move focus to the previous input if it's not the first one
+        if (index > 0) {
+          inputRefs.current[index - 1].focus();
         }
+      } else {
+        newOtp[index] = text.replace(/[^0-9]/g, ""); // Allow only numbers
+    
+        // Move focus to the next input if it's not the last one
+        if (index < otp.length - 1) {
+          inputRefs.current[index + 1].focus();
+        }
+      }
+    
+      setOtp(newOtp);
     };
+    
+
+    const verifyOtp = async () => {
+      const otpString = otp.join(''); 
+      console.log(otpString)
+      try {
+        const phoneRegisterResponse = await axios.post('http://50.18.12.185:8080/YogaApp-0.0.1-SNAPSHOT/user/validateOtp', {
+          userMobileNumber: "+917904353665",
+          userOtp: otpString
+        });
+        const response = await phoneRegisterResponse.data;
+        console.log('Phone Registration Success:', response);
+        navigation.navigate('Register');
+      } catch (error) {
+        console.error('Phone Registration Error:', error.message);
+        if (error.response) {
+          // The request was made and the server responded with a status code that falls out of the range of 2xx
+          console.error('Response error:', error.response.data);
+          console.error('Response status:', error.response.status);
+          console.error('Response headers:', error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error('Request error:', error.request);
+        } else {
+          // Something happened in setting up the request that triggered an error
+          console.error('Error message:', error.message);
+        }
+      }
+    };
+    
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -85,7 +132,7 @@ const OtpScreen = ({ theme = "light" }) => {
           <View style={styles.verifyOtpWrapper}>
             <TouchableOpacity
               style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
-              onPress={() => navigation.navigate("Register")}
+              onPress={verifyOtp}
             >
               <Text style={[styles.buttonText]}>
                 Verify Otp

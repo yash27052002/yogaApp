@@ -1,9 +1,8 @@
-import React, { useState, useRef } from "react";
-import { 
-  Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Image, ScrollView 
-} from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Image, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Navbar from "./Navbar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
@@ -28,10 +27,87 @@ const newsData = [
 const Home = () => {
   const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [boardingTime, setBoardingTime] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState("");
+  const [name, setName] = useState("");
+
   const flatListRef = useRef(null);
 
+  useEffect(() => {
+    const fetchBoardingTime = async () => {
+      try {
+        const storedBoardingTime = await AsyncStorage.getItem("boardingTime");
+        const userName = await AsyncStorage.getItem("userName");
+  
+        if (storedBoardingTime) {
+          const currentDate = new Date();
+          const [time, period] = storedBoardingTime.split(" ");
+  
+          const [hours, minutes] = time.split(":").map(Number);
+          let adjustedHours = hours;
+  
+          if (period.toUpperCase() === "PM" && hours !== 12) {
+            adjustedHours = hours + 12;
+          } else if (period.toUpperCase() === "AM" && hours === 12) {
+            adjustedHours = 0;
+          }
+  
+          const boardingTimeDate = new Date(
+            currentDate.setHours(adjustedHours, minutes, 0, 0)
+          );
+  
+          if (!isNaN(boardingTimeDate.getTime())) {
+            setBoardingTime(boardingTimeDate);
+            calculateTimeRemaining(boardingTimeDate);
+          } else {
+            console.error("Invalid boarding time value");
+          }
+  
+          setName(userName);
+        } else {
+          console.log("No boarding time found");
+        }
+      } catch (error) {
+        console.error("Error fetching boarding time:", error);
+      }
+    };
+  
+    fetchBoardingTime();
+
+    const intervalId = setInterval(() => {
+      if (boardingTime) {
+        calculateTimeRemaining(boardingTime);
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [boardingTime]);
+
+  const calculateTimeRemaining = (boardingTimeDate) => {
+    if (boardingTimeDate) {
+      const currentTime = new Date();
+      const timeDifference = boardingTimeDate - currentTime;
+
+      if (timeDifference > 0) {
+        const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+        const paddedHours = String(hours).padStart(2, "0");
+        const paddedMinutes = String(minutes).padStart(2, "0");
+        const paddedSeconds = String(seconds).padStart(2, "0");
+
+        setTimeRemaining(`${paddedHours}:${paddedMinutes}:${paddedSeconds}`);
+      } else {
+        setTimeRemaining("Boarding time has passed");
+      }
+    } else {
+      setTimeRemaining("Loading...");
+    }
+  };
+
   const handleScroll = (event) => {
-    const index = Math.round(event.nativeEvent.contentOffset.x / (width * 0.9)); // Adjust index based on card width
+    const index = Math.round(event.nativeEvent.contentOffset.x / (width * 0.9));
     setCurrentIndex(index);
   };
 
@@ -43,24 +119,27 @@ const Home = () => {
   );
 
   return (
-    <ScrollView style={styles.container}>
-
-<View style={styles.welcomeSection}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContent}>
+      <View style={styles.welcomeSection}>
         <Text style={styles.welcome}>Welcome,</Text>
-        <Text style={styles.username}>Jeshwant</Text>
+        <Text style={styles.username}>{name}</Text>
         <Text style={styles.journeyText}>Begin your journey here</Text>
       </View>
-      <View style={styles.cardRow}>
-    <View style={styles.welcomeCard}>
-      <Text style={styles.cardTitle}>Your flight in</Text>
-      <Text style={styles.cardDescription}>00:12:54</Text>
-    </View>
-    <View style={styles.welcomeCard2}>
-      <Text style={styles.cardTitle}>Today, +0HRS</Text>
-      <Text style={styles.cardDescription}>28 °C     12:54PM</Text>
 
-    </View>
-  </View>
+      {/* Card Row with Reduced Space */}
+      <View style={styles.cardRow}>
+        <View style={styles.welcomeCard}>
+          <Text style={styles.cardTitle}>Your flight in</Text>
+          <Text style={styles.cardDescription}>
+            {boardingTime ? timeRemaining : "Loading..."}
+          </Text>
+        </View>
+        <View style={styles.welcomeCard2}>
+          <Text style={styles.cardTitle}>Today, +0HRS</Text>
+          <Text style={styles.cardDescription}>28 °C     12:54PM</Text>
+        </View>
+      </View>
+
       {/* News Section */}
       <View style={styles.newsContainer}>
         <FlatList
@@ -72,7 +151,7 @@ const Home = () => {
           onScroll={handleScroll}
           renderItem={renderNewsItem}
           keyExtractor={(item) => item.id}
-          snapToInterval={width * 0.9} // Ensures cards snap to the correct position
+          snapToInterval={width * 0.9}
           decelerationRate="fast"
         />
 
@@ -84,13 +163,10 @@ const Home = () => {
         </View>
       </View>
 
-      {/* Welcome Section */}
-
-
       {/* Scrollable Image Section */}
       <View style={styles.imageSection}>
         <Image
-           source={require('../assets/meditation.png')}
+          source={require('../assets/meditation.png')}
           style={styles.scrollImage}
         />
       </View>
@@ -121,13 +197,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollViewContent: {
+    paddingBottom: 70, // Adjust padding for the footer space
+  },
   cardRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 15,
+    justifyContent: "flex-start",
+    marginTop: 5,
   },
   welcomeCard: {
-    width: width * 0.43,
+    width: width * 0.46,
     backgroundColor: "#675987",
     borderRadius: 10,
     padding: 15,
@@ -137,10 +216,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
+    marginRight: 8,
   },
   welcomeCard2: {
-    width: width * 0.43,
-    backgroundColor: "#051650",
+    width: width * 0.46,
+    backgroundColor: "#595b6d",
     borderRadius: 10,
     padding: 15,
     alignItems: "center",
@@ -150,97 +230,99 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  newsContainer: {
-    alignItems: "center",
-    marginTop: 20,
-    height: 240,
-  },
-  newsCard: {
-    width: width * 0.9, // Adjusted width for better fit
-    height: width * 0.5, // Adjust the height to avoid cut-off
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 30,
-    marginHorizontal: 10,
-    elevation: 15,
-    justifyContent: 'center', // Ensures content is centered within the card
-
-    // iOS shadow properties
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 }, // Slight shadow below
-    shadowOpacity: 0.9, // Soft shadow intensity
-    shadowRadius: 5, // Softens the shadow
-
-    // Android shadow properties
-    elevation: 10, // Elevation for shadow below on Android
-  },
-  
-  newsTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  newsDescription: {
-    fontSize: 14,
-    color: "#666",
-  },
-  pagination: {
-    flexDirection: "row",
-    marginTop: 10,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ccc",
-    marginHorizontal: 5,
-  },
-  activeDot: {
-    backgroundColor: "#007AFF",
-  },
   welcomeSection: {
-    marginTop: 30,
+    marginTop: 20,
+    marginBottom: 15,
     paddingHorizontal: 20,
   },
   welcome: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
+    color: "#8E8E8E",
   },
   username: {
-    fontSize: 22,
+    fontSize: 25,
     fontWeight: "bold",
+    color: "#4A4A4A",
   },
   journeyText: {
+    fontSize: 14,
+    color: "#A8A8A8",
+    marginTop: 5,
+  },
+  cardTitle: {
     fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: "#fff",
+    marginTop: 5,
+  },
+  newsContainer: {
+    marginTop: 30,
+  },
+  newsCard: {
+    backgroundColor: "#F4F4F4",
+    borderRadius: 8,
+    padding: 10,
+    margin: 10,
+    width: width * 0.85,
+    marginBottom: 20,
+  },
+  newsTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  newsDescription: {
+    fontSize: 14,
     color: "#555",
     marginTop: 5,
   },
+  pagination: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#ccc",
+    margin: 5,
+  },
+  activeDot: {
+    backgroundColor: "#675987",
+  },
   imageSection: {
-    marginTop: 20,
+    marginTop: 30,
     alignItems: "center",
   },
   scrollImage: {
     width: width * 0.9,
-    height: 200,
-    borderRadius: 15,
-    marginBottom: 20,
+    height: width * 0.9,
+    borderRadius: 10,
+    resizeMode: "cover",
   },
   exploreSection: {
-    marginTop: 20,
+    marginTop: 30,
     paddingHorizontal: 20,
   },
   exploreText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
+    marginBottom: 10,
+    color: "#4A4A4A",
   },
   cardContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
   },
   exploreCard: {
     width: width * 0.28,
-    backgroundColor: "#fff",
+    backgroundColor: "#675987",
     borderRadius: 10,
     padding: 15,
     alignItems: "center",
@@ -249,18 +331,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    color:'#fff'
-  },
-  cardDescription: {
-    fontSize: 12,
-    color: "#fff",
-    textAlign: "center",
-    marginTop: 5,
   },
 });
 

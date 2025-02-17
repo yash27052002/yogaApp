@@ -1,7 +1,7 @@
-import React, { useState  } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; // Use Tab Navigator
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; 
 import { Provider } from 'react-redux'; 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
@@ -18,7 +18,7 @@ import Categories from './screens/Categories';
 import Navbar from './screens/Navbar';
 import store from './redux/Store';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator(); // Create Tab Navigator
 const { width } = Dimensions.get('window');
@@ -27,6 +27,32 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false); 
   const Stack = createNativeStackNavigator();
 
+  // Check authentication when the component is mounted
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const randomCode = await AsyncStorage.getItem('randomCode');
+        if (randomCode) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Error checking random code', error);
+      }
+    };
+
+    // Initial check on mount
+    checkAuthentication();
+
+    // Polling to check AsyncStorage for changes in randomCode every 3 seconds
+    const intervalId = setInterval(checkAuthentication, 3000);
+
+    // Cleanup interval on component unmount
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
 
   return (
     <Provider store={store}>
@@ -34,41 +60,41 @@ const App = () => {
         <NavigationContainer>
           {isAuthenticated ? (
             // If authenticated, show the TabNavigator with Navbar as static header
-<Tab.Navigator
-  screenOptions={({ route }) => ({
-    headerShown: false,
-    tabBarStyle: {
-      backgroundColor: "#675987",
-      height: 60,
-      borderTopLeftRadius: 500,
-      borderTopRightRadius: 500,
-      position: "absolute",
-      shadowColor: "#000",
-      shadowOpacity: 0.1,
-      shadowRadius: 10,
-      elevation: 5,
-    },
-    tabBarLabelStyle: {
-      fontSize: 13,
-      fontWeight: "bold",
-      marginBottom: 10,
-    },
-    tabBarActiveTintColor: "#000",
-    tabBarInactiveTintColor: "#fff",
-    tabBarButton: (props) => {
-      const isFocused = props.accessibilityState?.selected;
-      return (
-        <View style={[styles.tabButtonContainer, isFocused && styles.activeTab]}>
-          <TouchableOpacity {...props} />
-        </View>
-      );
-    },
-  })}
->
-  <Tab.Screen name="Home" component={HomeScreenWrapper} />
-  <Tab.Screen name="Categories" component={CategoriesWrapper} />
-  <Tab.Screen name="Coaches" component={CoachesWrapper} />
-</Tab.Navigator>
+            <Tab.Navigator
+              screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarStyle: {
+                  backgroundColor: "#675987",
+                  height: 60,
+                  borderTopLeftRadius: 500,
+                  borderTopRightRadius: 500,
+                  position: "absolute",
+                  shadowColor: "#000",
+                  shadowOpacity: 0.1,
+                  shadowRadius: 10,
+                  elevation: 5,
+                },
+                tabBarLabelStyle: {
+                  fontSize: 13,
+                  fontWeight: "bold",
+                  marginBottom: 10,
+                },
+                tabBarActiveTintColor: "#000",
+                tabBarInactiveTintColor: "#fff",
+                tabBarButton: (props) => {
+                  const isFocused = props.accessibilityState?.selected;
+                  return (
+                    <View style={[styles.tabButtonContainer, isFocused && styles.activeTab]}>
+                      <TouchableOpacity {...props} />
+                    </View>
+                  );
+                },
+              })}
+            >
+              <Tab.Screen name="Home" component={HomeScreenWrapper} />
+              <Tab.Screen name="Categories" component={CategoriesWrapper} />
+              <Tab.Screen name="Coaches" component={CoachesWrapper} />
+            </Tab.Navigator>
           ) : (
             // If not authenticated, show the login flow
             <>
@@ -117,6 +143,7 @@ const CoachesWrapper = () => (
     </View>
   </View>
 );
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -130,11 +157,6 @@ const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     paddingTop: 60, // Adjust this value based on your Navbar height
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
   },
   tabButtonContainer: {
     flex: 1,
