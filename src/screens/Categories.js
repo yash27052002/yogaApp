@@ -1,34 +1,41 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Image, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Image, useWindowDimensions, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const Categories = () => {
     const { width } = useWindowDimensions();
     const isTablet = width >= 778 && width < 1024;  // Tablet size
     const isDesktop = width >= 1024;  // Desktop size
+    const navigation = useNavigation(); // Initialize useNavigation hook
 
     // Different content for each section
     const sectionContent = {
         "From the Mentors": [
-            { id: 1, title: "Hanuman’s way by Aravindh", image: require('../assets/hanuman.png') },
-            { id: 2, title: "Card 2", image: require('../assets/godworld.png') },
-            { id: 3, title: "Card 3", image: require('../assets/reading.png') },
-            { id: 4, title: "Card 4", image: require('../assets/mahabarath.png') },
-            { id: 5, title: "Card 5", image: require('../assets/ram.png') },
+            { id: 1, title: "Hanuman’s way by Aravindh", image: require('../assets/hanuman.png'), videoUrl: 'https://path/to/video1' },
+            { id: 2, title: "Card 2", image: require('../assets/godworld.png'), videoUrl: 'https://path/to/video2' },
+            { id: 3, title: "Card 3", image: require('../assets/reading.png'), videoUrl: 'https://path/to/video3' },
+            { id: 4, title: "Card 4", image: require('../assets/mahabarath.png'), videoUrl: 'https://path/to/video4' },
+            { id: 5, title: "Card 5", image: require('../assets/ram.png'), videoUrl: 'https://path/to/video5' },
         ],
         "From Purnam": [
-            { id: 1, title: "Card A", image: require('../assets/universe.png') },
-            { id: 2, title: "Card B", image: require('../assets/siva.png') },
-            { id: 3, title: "Card C", image: require('../assets/siva2.png') },
-            { id: 4, title: "Card D", image: require('../assets/vishnu.png') },
-            { id: 5, title: "Card E", image: require('../assets/saints.png') },
+            { id: 1, title: "Card A", image: require('../assets/universe.png'), videoUrl: 'https://path/to/videoA' },
+            { id: 2, title: "Card B", image: require('../assets/siva.png'), videoUrl: 'https://path/to/videoB' },
+            { id: 3, title: "Card C", image: require('../assets/siva2.png'), videoUrl: 'https://path/to/videoC' },
+            { id: 4, title: "Card D", image: require('../assets/vishnu.png'), videoUrl: 'https://path/to/videoD' },
+            { id: 5, title: "Card E", image: require('../assets/saints.png'), videoUrl: 'https://path/to/videoE' },
         ],
     };
 
+    const handleCardPress = (videoUrl) => {
+        // Navigate to VideoPlayerScreen and pass video URL
+        navigation.navigate('VideoPlayer');
+    };
+
     const renderCard = (card) => (
-        <View key={card.id} style={styles.card}>
+        <TouchableOpacity key={card.id} style={styles.card} onPress={() => handleCardPress(card.videoUrl)}>
             <Image source={card.image} style={styles.cardImage} />
             <Text style={styles.cardText}>{card.title}</Text> {/* Ensuring this is wrapped in Text */}
-        </View>
+        </TouchableOpacity>
     );
 
     const renderSection = (title, content) => (

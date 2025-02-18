@@ -4,13 +4,18 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
 import UserProfileIcon from "../assets/userProfile.png";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Searchaltsvgrepocom from "../assets/lotus-yoga_svgrepo.com.svg";
 
 const Navbar = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  
+
   const [selectedNav, setSelectedNav] = useState(route.name);
   const [dropdownVisible, setDropdownVisible] = useState(false); // State to manage dropdown visibility
+  const [searchBarVisible, setSearchBarVisible] = useState(false); // State to manage search bar visibility on mobile
+
+  const { width } = Dimensions.get("window");
+  const isTablet = width >= 768; // Define tablet size (you can adjust this threshold as needed)
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("state", () => {
@@ -29,10 +34,29 @@ const Navbar = () => {
     }
   };
 
+  const toggleSearchBar = () => {
+    setSearchBarVisible(!searchBarVisible);
+  };
+
   return (
     <View style={styles.header}>
       {/* Lotus Icon - Left */}
       <LotusYoga height={40} width={40} />
+
+      {/* Search Bar (visible on tablet or toggled on mobile) */}
+      {(isTablet || searchBarVisible) && (
+        <View style={styles.searchBar}>
+          <Text style={styles.searchText}>What are you looking for?</Text>
+          <Searchaltsvgrepocom style={styles.searchIcon} width={25} height={25} />
+        </View>
+      )}
+
+      {/* Search Icon (only visible on mobile, toggles the search bar) */}
+      {!isTablet && (
+        <TouchableOpacity onPress={toggleSearchBar}>
+          <Searchaltsvgrepocom style={styles.searchIconMobile} width={25} height={25} />
+        </TouchableOpacity>
+      )}
 
       {/* User Profile Icon - Right */}
       <TouchableOpacity onPress={() => setDropdownVisible(!dropdownVisible)}>
@@ -60,8 +84,6 @@ const Navbar = () => {
   );
 };
 
-const { width } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
@@ -70,13 +92,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     height: 60,
-    width: width,
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "space-between",
+    width: "100%", // Use full screen width for better responsiveness
+    justifyContent: "space-between", // Flexbox for proper layout
     elevation: 5,
+    position: "relative", // Ensure the position of the header is correct
   },
   profileIcon: {
     width: 40,
@@ -102,6 +121,26 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
     color: '#333',
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f1f1f1",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    flex: 1,
+  },
+  searchText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#666",
+  },
+  searchIcon: {
+    marginLeft: 10,
+  },
+  searchIconMobile: {
+    marginLeft: 10,
   },
 });
 

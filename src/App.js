@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; 
-import { Provider } from 'react-redux'; 
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Provider } from 'react-redux';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -17,17 +17,17 @@ import Coaches from './screens/Coaches';
 import Categories from './screens/Categories';
 import Navbar from './screens/Navbar';
 import store from './redux/Store';
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import MainLayout from './screens/MainLayout';
+import VideoPlayer from './screens/VideoPlayer';
 
-const Tab = createBottomTabNavigator(); // Create Tab Navigator
-const { width } = Dimensions.get('window');
+const Tab = createBottomTabNavigator();
+const { width, height } = Dimensions.get('window');
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const Stack = createNativeStackNavigator();
 
-  // Check authentication when the component is mounted
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
@@ -42,63 +42,26 @@ const App = () => {
       }
     };
 
-    // Initial check on mount
     checkAuthentication();
 
-    // Polling to check AsyncStorage for changes in randomCode every 3 seconds
     const intervalId = setInterval(checkAuthentication, 3000);
-
-    // Cleanup interval on component unmount
     return () => {
       clearInterval(intervalId);
     };
-  }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+  }, []);
 
   return (
     <Provider store={store}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
         <NavigationContainer>
-          {isAuthenticated ? (
-            // If authenticated, show the TabNavigator with Navbar as static header
-            <Tab.Navigator
-              screenOptions={({ route }) => ({
-                headerShown: false,
-                tabBarStyle: {
-                  backgroundColor: "#675987",
-                  height: 60,
-                  borderTopLeftRadius: 500,
-                  borderTopRightRadius: 500,
-                  position: "absolute",
-                  shadowColor: "#000",
-                  shadowOpacity: 0.1,
-                  shadowRadius: 10,
-                  elevation: 5,
-                },
-                tabBarLabelStyle: {
-                  fontSize: 13,
-                  fontWeight: "bold",
-                  marginBottom: 10,
-                },
-                tabBarActiveTintColor: "#000",
-                tabBarInactiveTintColor: "#fff",
-                tabBarButton: (props) => {
-                  const isFocused = props.accessibilityState?.selected;
-                  return (
-                    <View style={[styles.tabButtonContainer, isFocused && styles.activeTab]}>
-                      <TouchableOpacity {...props} />
-                    </View>
-                  );
-                },
-              })}
-            >
-              <Tab.Screen name="Home" component={HomeScreenWrapper} />
-              <Tab.Screen name="Categories" component={CategoriesWrapper} />
-              <Tab.Screen name="Coaches" component={CoachesWrapper} />
-            </Tab.Navigator>
-          ) : (
-            // If not authenticated, show the login flow
-            <>
-              <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {isAuthenticated ? (
+              <>
+                <Stack.Screen name="HomeTabs" component={HomeTabs} />
+                <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
+              </>
+            ) : (
+              <>
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="OtpScreen" component={OtpScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
@@ -107,68 +70,96 @@ const App = () => {
                 <Stack.Screen name="BoardingTime" component={BoardingTime} />
                 <Stack.Screen name="Preferance" component={Preferance} />
                 <Stack.Screen name="Loading" component={Loading} />
-              </Stack.Navigator>
-            </>
-          )}
+                <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
+              </>
+            )}
+          </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
     </Provider>
   );
 };
 
-// Wrapping screen components to include Navbar
-const HomeScreenWrapper = () => (
-  <View style={styles.wrapperContainer}>
-    <Navbar />
-    <View style={styles.screenContainer}>
-      <HomeScreen />
-    </View>
-  </View>
+const HomeTabs = () => (
+  <Tab.Navigator
+    screenOptions={({ route }) => ({
+      headerShown: false,
+      tabBarStyle: styles.tabBar,
+      tabBarLabelStyle: styles.tabBarLabel,
+      tabBarActiveTintColor: "#000", // Active text color
+      tabBarInactiveTintColor: "#fff", // Inactive text color
+      tabBarIcon: () => null, // Remove icons
+      tabBarButton: (props) => {
+        const isFocused = props.accessibilityState?.selected;
+        return (
+          <View style={[styles.tabButtonContainer, isFocused && styles.activeTab]}>
+            <TouchableOpacity {...props} style={styles.tabButton} />
+          </View>
+        );
+      },
+    })}
+  >
+    <Tab.Screen name="Home" component={HomeScreenWrapper} />
+    <Tab.Screen name="Categories" component={CategoriesWrapper} />
+    <Tab.Screen name="Coaches" component={CoachesWrapper} />
+  </Tab.Navigator>
 );
 
-const CategoriesWrapper = () => (
-  <View style={styles.wrapperContainer}>
-    <Navbar />
-    <View style={styles.screenContainer}>
-      <Categories />
-    </View>
-  </View>
+const HomeScreenWrapper = ({ navigation, route }) => (
+  <MainLayout>
+    <HomeScreen navigation={navigation} route={route} />
+  </MainLayout>
 );
 
-const CoachesWrapper = () => (
-  <View style={styles.wrapperContainer}>
-    <Navbar />
-    <View style={styles.screenContainer}>
-      <Coaches />
-    </View>
-  </View>
+const CategoriesWrapper = ({ navigation, route }) => (
+  <MainLayout>
+    <Categories navigation={navigation} route={route} />
+  </MainLayout>
+);
+
+const CoachesWrapper = ({ navigation, route }) => (
+  <MainLayout>
+    <Coaches navigation={navigation} route={route} />
+  </MainLayout>
 );
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 20,
+    marginTop: Platform.OS === 'ios' ? 0 : 20,
     backgroundColor: '#f5f5f5',
   },
-  wrapperContainer: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
+  tabBar: {
+    backgroundColor: "#675987",
+    height: 50, // Adjust the height for better visibility
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row', // Ensure tabs are arranged in a row
+    justifyContent: 'space-around', // Distribute space evenly
+    alignItems: 'center',
   },
-  screenContainer: {
-    flex: 1,
-    paddingTop: 60, // Adjust this value based on your Navbar height
+  tabBarLabel: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20, // Adjusted margin for better alignment
   },
   tabButtonContainer: {
-    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 250, // Add border-radius
+    borderRadius: 20,
     overflow: "hidden",
+    paddingVertical: 5, // Adjust padding for better space distribution
   },
   activeTab: {
-    backgroundColor: "#fff", // Active tab background color
-    borderRadius: 250, // Rounded edges for the active tab
-    padding: -10, // Padding for better look
+    backgroundColor: "#fff",
+    borderRadius: 80,
+    padding: 10,
+  },
+  tabButton: {
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

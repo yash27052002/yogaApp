@@ -23,6 +23,14 @@ const newsData = [
   },
 ];
 
+const exploreData = [
+  { id: 1, title: "Hanuman’s way by Aravindh", image: require('../assets/hanuman.png') },
+  { id: 2, title: "Stories of Vishnu", image: require('../assets/godworld.png') },
+  { id: 3, title: "The beginning", image: require('../assets/reading.png') },
+  { id: 4, title: "Bahavath Geetha", image: require('../assets/mahabarath.png') },
+  { id: 5, title: "Ramayana", image: require('../assets/ram.png') },
+];
+
 const Home = () => {
   const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -30,6 +38,8 @@ const Home = () => {
   const [timeRemaining, setTimeRemaining] = useState("");
   const [name, setName] = useState("");
   const [isLandscape, setIsLandscape] = useState(width > height);
+  const [windowWidth, setWindowWidth] = useState(width);
+  const [windowHeight, setWindowHeight] = useState(height);
 
   const flatListRef = useRef(null);
 
@@ -38,31 +48,31 @@ const Home = () => {
       try {
         const storedBoardingTime = await AsyncStorage.getItem("boardingTime");
         const userName = await AsyncStorage.getItem("userName");
-  
+
         if (storedBoardingTime) {
           const currentDate = new Date();
           const [time, period] = storedBoardingTime.split(" ");
-  
+
           const [hours, minutes] = time.split(":").map(Number);
           let adjustedHours = hours;
-  
+
           if (period.toUpperCase() === "PM" && hours !== 12) {
             adjustedHours = hours + 12;
           } else if (period.toUpperCase() === "AM" && hours === 12) {
             adjustedHours = 0;
           }
-  
+
           const boardingTimeDate = new Date(
             currentDate.setHours(adjustedHours, minutes, 0, 0)
           );
-  
+
           if (!isNaN(boardingTimeDate.getTime())) {
             setBoardingTime(boardingTimeDate);
             calculateTimeRemaining(boardingTimeDate);
           } else {
             console.error("Invalid boarding time value");
           }
-  
+
           setName(userName);
         } else {
           console.log("No boarding time found");
@@ -123,9 +133,15 @@ const Home = () => {
   };
 
   useEffect(() => {
-    Dimensions.addEventListener('change', handleLayoutChange);
+    const onDimensionsChange = ({ window }) => {
+      setWindowWidth(window.width);
+      setWindowHeight(window.height);
+    };
+
+    const dimensionSubscription = Dimensions.addEventListener('change', onDimensionsChange);
+
     return () => {
-      Dimensions.removeEventListener('change', handleLayoutChange);
+      dimensionSubscription?.remove();
     };
   }, []);
 
@@ -166,7 +182,6 @@ const Home = () => {
           decelerationRate="fast"
         />
 
-        {/* Pagination Dots */}
         <View style={styles.pagination}>
           {newsData.map((_, index) => (
             <View key={index} style={[styles.dot, currentIndex === index && styles.activeDot]} />
@@ -215,18 +230,12 @@ const Home = () => {
       <View style={styles.exploreSection}>
         <Text style={styles.exploreText}>Explore</Text>
         <View style={styles.cardContainer}>
-          <View style={styles.exploreCard}>
-            <Text style={styles.cardTitle}>Yoga Classes</Text>
-            <Text style={styles.cardDescription}>Join live or recorded yoga sessions.</Text>
-          </View>
-          <View style={styles.exploreCard}>
-            <Text style={styles.cardTitle}>Meditation</Text>
-            <Text style={styles.cardDescription}>Relax with guided meditations.</Text>
-          </View>
-          <View style={styles.exploreCard}>
-            <Text style={styles.cardTitle}>Healthy Living</Text>
-            <Text style={styles.cardDescription}>Tips for a healthier lifestyle.</Text>
-          </View>
+          {exploreData.map((item) => (
+            <View key={item.id} style={styles.exploreCard}>
+              <Image source={item.image} style={styles.cardImage} />
+              <Text style={styles.cardTitle2}>{item.title}</Text>
+            </View>
+          ))}
         </View>
       </View>
     </ScrollView>
@@ -236,75 +245,70 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
+    backgroundColor: "#ffffff",
   },
   scrollViewContent: {
-    paddingBottom: 70,
+    paddingBottom: 30,
+  },
+  welcomeSection: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  welcome: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  username: {
+    fontSize: 28,
+    fontWeight: "600",
+    color: "#0066cc",
+  },
+  journeyText: {
+    fontSize: 14,
+    color: "#666",
   },
   cardRow: {
     flexDirection: "row",
-    justifyContent: "flex-start",
-    marginTop: 5,
+    justifyContent: "space-between",
+    marginVertical: 10,
   },
   cardRowLandscape: {
     flexDirection: "column",
   },
   welcomeCard: {
-    width: width * 0.46,
-    backgroundColor: "#675987",
+    width: "48%",
+    padding: 16,
     borderRadius: 10,
-    padding: 15,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    marginRight: 8,
+    backgroundColor: "#675987",
   },
   welcomeCard2: {
-    width: width * 0.46,
-    backgroundColor: "#595b6d",
+    width: "48%",
+    padding: 16,
     borderRadius: 10,
-    padding: 15,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    backgroundColor: "#051650",
+  },
+
+  cardTitle: {
+    fontSize: 16,
+    color: "#fff"
+  },
+  cardTitle2: {
+    fontSize: 16,
+    color: "#000"
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: "#fff",
   },
   hidden: {
     display: "none",
   },
-  rightSidebar: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    backgroundColor: "#f4f4f4",
-    width: width * 0.3,
-    height: height,
-    padding: 20,
-  },
   newsContainer: {
-    marginTop: 30,
-  },
-  newsCard: {
-    backgroundColor: "#F4F4F4",
-    borderRadius: 8,
-    padding: 10,
-    margin: 10,
-    width: width * 0.85,
-    marginBottom: 20,
-  },
-  newsTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  newsDescription: {
-    fontSize: 14,
-    color: "#555",
-    marginTop: 5,
+    marginVertical: 20,
+    borderRadius: 10,
+    backgroundColor: "#fff",
   },
   pagination: {
     flexDirection: "row",
@@ -312,52 +316,49 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    marginHorizontal: 5,
+    borderRadius: 5,
     backgroundColor: "#ccc",
-    margin: 5,
   },
   activeDot: {
-    backgroundColor: "#ff5a00",
+    backgroundColor: "#0066cc",
+  },
+  rightSidebar: {
+    flex: 1,
+    justifyContent: "flex-start",
   },
   scrollImage: {
-    width: width * 0.9,
-    height: 200,
-    borderRadius: 10,
-    marginTop: 10,
+    width: "100%",
+    height: 250,
+    resizeMode: "contain",
   },
   exploreSection: {
     marginTop: 30,
-    marginHorizontal: 20,
   },
   exploreText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 15,
+    color: "#333",
   },
   cardContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
     flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   exploreCard: {
-    width: "30%",
-    backgroundColor: "#675987",
-    borderRadius: 10,
+    width: "48%",
     padding: 10,
-    marginBottom: 15,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#fafafa",
+    marginBottom: 20,
+    borderRadius: 8,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "white",
-  },
-  cardDescription: {
-    fontSize: 12,
-    color: "white",
+  cardImage: {
+    width: "100%",
+    height: 120,
+    resizeMode: "cover",
+    borderRadius: 8,
   },
 });
 

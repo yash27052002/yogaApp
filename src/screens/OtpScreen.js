@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, ScrollView ,useWindowDimensions} from "react-native";
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, ScrollView ,useWindowDimensions, KeyboardAvoidingView} from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 
 import Ellipse1 from "../assets/Ellipse1.svg";
