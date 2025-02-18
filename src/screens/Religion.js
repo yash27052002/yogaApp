@@ -10,6 +10,7 @@ import {
   Platform,
   Modal,
   FlatList,
+  useWindowDimensions,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
@@ -32,6 +33,11 @@ const { width, height } = Dimensions.get("window");
 const Religion = ({ theme = "light" }) => {
 
   const navigation = useNavigation();
+
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const isLandscape = width > height; // Detect landscape orientation
+
 
   const { control, handleSubmit, setValue } = useForm();
   const dispatch = useDispatch();
@@ -60,7 +66,6 @@ const Religion = ({ theme = "light" }) => {
   // Choose the theme based on the passed prop or context
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
 
-  const isTablet = width >= 768; // Check if the device is a tablet (width >= 768)
 
   // onSubmit function to handle form submission
   const onSubmit = (data) => {
@@ -79,8 +84,10 @@ const Religion = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.container}>
+<ScrollView 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  keyboardShouldPersistTaps="handled"
+>          <View style={styles.container}>
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
               <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />

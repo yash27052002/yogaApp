@@ -9,6 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
@@ -33,17 +34,19 @@ const RegisterScreen = ({ theme = "light" }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const isLandscape = width > height; // Detect landscape orientation
+
+
   const handleContinue = async (data) => {
-    await AsyncStorage.setItem('userName', data.name);
 
     console.log('Navigating to Religion');
     navigation.navigate('Religion');
-    console.log('Form Data:', data);
-    await dispatch(setUserData(data)); 
+
   };
 
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-  const isTablet = width >= 768;
 
   return (
     <LinearGradient
@@ -57,7 +60,10 @@ const RegisterScreen = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+<ScrollView 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  keyboardShouldPersistTaps="handled"
+>
           <View style={styles.container}>
             <View style={styles.svgContainer}>
               <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />

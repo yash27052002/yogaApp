@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Image, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Navbar from "./Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const newsData = [
   {
@@ -30,6 +29,7 @@ const Home = () => {
   const [boardingTime, setBoardingTime] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState("");
   const [name, setName] = useState("");
+  const [isLandscape, setIsLandscape] = useState(width > height);
 
   const flatListRef = useRef(null);
 
@@ -71,7 +71,7 @@ const Home = () => {
         console.error("Error fetching boarding time:", error);
       }
     };
-  
+
     fetchBoardingTime();
 
     const intervalId = setInterval(() => {
@@ -118,6 +118,17 @@ const Home = () => {
     </View>
   );
 
+  const handleLayoutChange = () => {
+    setIsLandscape(width > height);
+  };
+
+  useEffect(() => {
+    Dimensions.addEventListener('change', handleLayoutChange);
+    return () => {
+      Dimensions.removeEventListener('change', handleLayoutChange);
+    };
+  }, []);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.welcomeSection}>
@@ -127,21 +138,21 @@ const Home = () => {
       </View>
 
       {/* Card Row with Reduced Space */}
-      <View style={styles.cardRow}>
-        <View style={styles.welcomeCard}>
+      <View style={[styles.cardRow, isLandscape && styles.cardRowLandscape]}>
+        <View style={[styles.welcomeCard, isLandscape && styles.hidden]}>
           <Text style={styles.cardTitle}>Your flight in</Text>
           <Text style={styles.cardDescription}>
             {boardingTime ? timeRemaining : "Loading..."}
           </Text>
         </View>
-        <View style={styles.welcomeCard2}>
+        <View style={[styles.welcomeCard2, isLandscape && styles.hidden]}>
           <Text style={styles.cardTitle}>Today, +0HRS</Text>
           <Text style={styles.cardDescription}>28 °C     12:54PM</Text>
         </View>
       </View>
 
       {/* News Section */}
-      <View style={styles.newsContainer}>
+      <View style={[styles.newsContainer, isLandscape && styles.hidden]}>
         <FlatList
           ref={flatListRef}
           data={newsData}
@@ -162,6 +173,35 @@ const Home = () => {
           ))}
         </View>
       </View>
+
+      {/* Right Sidebar in Landscape Mode */}
+      {isLandscape && (
+        <View style={styles.rightSidebar}>
+          <View style={styles.welcomeCard}>
+            <Text style={styles.cardTitle}>Your flight in</Text>
+            <Text style={styles.cardDescription}>
+              {boardingTime ? timeRemaining : "Loading..."}
+            </Text>
+          </View>
+          <View style={styles.welcomeCard2}>
+            <Text style={styles.cardTitle}>Today, +0HRS</Text>
+            <Text style={styles.cardDescription}>28 °C     12:54PM</Text>
+          </View>
+
+          <FlatList
+            ref={flatListRef}
+            data={newsData}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            renderItem={renderNewsItem}
+            keyExtractor={(item) => item.id}
+            snapToInterval={width * 0.9}
+            decelerationRate="fast"
+          />
+        </View>
+      )}
 
       {/* Scrollable Image Section */}
       <View style={styles.imageSection}>
@@ -198,12 +238,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: 70, // Adjust padding for the footer space
+    paddingBottom: 70,
   },
   cardRow: {
     flexDirection: "row",
     justifyContent: "flex-start",
     marginTop: 5,
+  },
+  cardRowLandscape: {
+    flexDirection: "column",
   },
   welcomeCard: {
     width: width * 0.46,
@@ -230,35 +273,17 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  welcomeSection: {
-    marginTop: 20,
-    marginBottom: 15,
-    paddingHorizontal: 20,
+  hidden: {
+    display: "none",
   },
-  welcome: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#8E8E8E",
-  },
-  username: {
-    fontSize: 25,
-    fontWeight: "bold",
-    color: "#4A4A4A",
-  },
-  journeyText: {
-    fontSize: 14,
-    color: "#A8A8A8",
-    marginTop: 5,
-  },
-  cardTitle: {
-    fontSize: 16,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: "#fff",
-    marginTop: 5,
+  rightSidebar: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    backgroundColor: "#f4f4f4",
+    width: width * 0.3,
+    height: height,
+    padding: 20,
   },
   newsContainer: {
     marginTop: 30,
@@ -287,50 +312,52 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: "#ccc",
     margin: 5,
   },
   activeDot: {
-    backgroundColor: "#675987",
-  },
-  imageSection: {
-    marginTop: 30,
-    alignItems: "center",
+    backgroundColor: "#ff5a00",
   },
   scrollImage: {
     width: width * 0.9,
-    height: width * 0.9,
+    height: 200,
     borderRadius: 10,
-    resizeMode: "cover",
+    marginTop: 10,
   },
   exploreSection: {
     marginTop: 30,
-    paddingHorizontal: 20,
+    marginHorizontal: 20,
   },
   exploreText: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
-    color: "#4A4A4A",
+    marginBottom: 15,
   },
   cardContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    flexWrap: "wrap",
   },
   exploreCard: {
-    width: width * 0.28,
+    width: "30%",
     backgroundColor: "#675987",
     borderRadius: 10,
-    padding: 15,
+    padding: 10,
+    marginBottom: 15,
+    justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
+  },
+  cardDescription: {
+    fontSize: 12,
+    color: "white",
   },
 });
 

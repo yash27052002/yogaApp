@@ -27,14 +27,14 @@ const Categories = () => {
     const renderCard = (card) => (
         <View key={card.id} style={styles.card}>
             <Image source={card.image} style={styles.cardImage} />
-            <Text style={styles.cardText}>{card.title}</Text>
+            <Text style={styles.cardText}>{card.title}</Text> {/* Ensuring this is wrapped in Text */}
         </View>
     );
 
     const renderSection = (title, content) => (
         <View key={title} style={styles.section}>
             <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
-                {title}
+                {title} {/* Ensuring section title is wrapped in Text */}
             </Text>
             <ScrollView 
                 horizontal 
@@ -48,7 +48,7 @@ const Categories = () => {
     );
 
     return (
-        <ScrollView contentContainerStyle={styles.container} scrollEnabled={false}>
+        <ScrollView contentContainerStyle={styles.container}> {/* Root ScrollView */}
             {Object.entries(sectionContent).map(([sectionTitle, content]) =>
                 renderSection(sectionTitle, content)
             )}

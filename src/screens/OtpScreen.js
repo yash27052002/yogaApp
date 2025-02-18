@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, ScrollView ,useWindowDimensions} from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 
 import Ellipse1 from "../assets/Ellipse1.svg";
@@ -18,9 +18,10 @@ const { width, height } = Dimensions.get("window");
 
 const OtpScreen = ({ theme = "light" }) => {
     const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-    const isTablet = width >= 768;  // Check if the device is a tablet (width >= 768)
-    const isDesktop = width >= 1024; // Check if the device is a desktop (width >= 1024)
-    const navigation = useNavigation();
+    const { width, height } = useWindowDimensions();
+    const isTablet = width >= 768;
+    const isLandscape = width > height; // Detect landscape orientation
+      const navigation = useNavigation();
     const dispatch = useDispatch();
 
 
@@ -55,43 +56,26 @@ const OtpScreen = ({ theme = "light" }) => {
     
 
     const verifyOtp = async () => {
-      const otpString = otp.join(''); 
-      console.log(otpString)
-      try {
-        const phoneRegisterResponse = await axios.post('http://50.18.12.185:8080/YogaApp-0.0.1-SNAPSHOT/user/validateOtp', {
-          userMobileNumber: "+917904353665",
-          userOtp: otpString
-        });
-        const response = await phoneRegisterResponse.data;
-        console.log('Phone Registration Success:', response);
+      
         navigation.navigate('Register');
-      } catch (error) {
-        console.error('Phone Registration Error:', error.message);
-        if (error.response) {
-          // The request was made and the server responded with a status code that falls out of the range of 2xx
-          console.error('Response error:', error.response.data);
-          console.error('Response status:', error.response.status);
-          console.error('Response headers:', error.response.headers);
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.error('Request error:', error.request);
-        } else {
-          // Something happened in setting up the request that triggered an error
-          console.error('Error message:', error.message);
-        }
-      }
+
     };
     
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <LinearGradient
-        style={styles.login}
-        locations={[0, 1]}
-        colors={["#dacaff", "#f4ffe1"]}
-        useAngle={true}
-        angle={180}
-      >
+    <LinearGradient
+    style={styles.login}
+    locations={[0, 1]}
+    colors={["#dacaff", "#f4ffe1"]}
+    useAngle={true}
+    angle={180}
+  >
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+
+<ScrollView 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  keyboardShouldPersistTaps="handled"
+>  
         {/* Main Content Container */}
         <View style={styles.mainContainer}>
           {/* SVG items */}
@@ -140,8 +124,11 @@ const OtpScreen = ({ theme = "light" }) => {
             </TouchableOpacity>
           </View>
         </View>
-      </LinearGradient>
     </ScrollView>
+    </KeyboardAvoidingView>
+
+    </LinearGradient>
+
   );
 };
 

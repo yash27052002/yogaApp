@@ -11,6 +11,7 @@ import {
   Modal,
   FlatList,
   TextInput,
+  useWindowDimensions,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
@@ -33,6 +34,10 @@ const Destination = ({ theme = "light" }) => {
   const navigation = useNavigation();
   const { control, handleSubmit, setValue } = useForm();
   const dispatch = useDispatch();
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const isLandscape = width > height; // Detect landscape orientation
+
 
   
   // Destination Dropdown States
@@ -58,7 +63,6 @@ const Destination = ({ theme = "light" }) => {
   };
 
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-  const isTablet = width >= 768;
 
   const onSubmit = async (data) => {
     console.log("Selected Destination:", data);
@@ -76,8 +80,10 @@ const Destination = ({ theme = "light" }) => {
       angle={180}
     >
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.container}>
+      <ScrollView 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  keyboardShouldPersistTaps="handled"
+>          <View style={styles.container}>
           <View style={styles.svgContainer}>
               <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
               <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />

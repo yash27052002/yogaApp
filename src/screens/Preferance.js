@@ -10,6 +10,7 @@ import {
   Platform,
   Modal,
   FlatList,
+  useWindowDimensions,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
@@ -62,7 +63,9 @@ const Preferance = ({ theme = "light" }) => {
   // Choose the theme based on the passed prop or context
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
 
-  const isTablet = width >= 768; // Check if the device is a tablet (width >= 768)
+  const { width, height } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const isLandscape = width > height; // Detect landscape orientation
 
   const storeRandomCode = async () => {
     const randomCode = Math.random().toString(36).substring(7); // Generates a random string
@@ -93,8 +96,10 @@ const Preferance = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.container}>
+      <ScrollView 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  keyboardShouldPersistTaps="handled"
+>          <View style={styles.container}>
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
               <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />

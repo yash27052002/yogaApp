@@ -14,8 +14,6 @@ import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import axios from 'axios'; // Add this import at the top
-
 
 // Import SVG icons
 import Ellipse1 from "../assets/Ellipse1.svg";
@@ -27,8 +25,10 @@ import GoogleIcon from "../assets/google-color_svgrepo.com.svg";
 
 // Import themes
 import { lightTheme, darkTheme } from "../styles/themes.js"; 
+import { useDispatch } from 'react-redux';
+import { googleLogin } from '../redux/authSlice.js'; // Import your action
 
-// Google Sign-in configuration
+
 GoogleSignin.configure({
   webClientId: '968763437649-9cq1vtnj2ssag10u0hke0mgmjaqn5i4q.apps.googleusercontent.com',
   iosClientId: '968763437649-47ue230k96ni2d5shup0d4h213vd6s45.apps.googleusercontent.com',
@@ -40,56 +40,36 @@ GoogleSignin.configure({
 const Login = ({ theme = "light" }) => {
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 768;
+  const isLandscape = width > height; // Detect landscape orientation
   const { control, handleSubmit } = useForm();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();  // Hook to access dispatch function
 
-  // Google Login Function
- const GoogleLogin = async () => {
-  try {
+  const GoogleLogin = async () => {
     await GoogleSignin.hasPlayServices();
     const userInfo = await GoogleSignin.signIn();
-    console.log('User Info:', userInfo);
-  } catch (error) {
-    console.error('Google Sign-In Error:', error);
-  }
+    console.log('User Info:', userInfo);  // Log user info to verify structure
+    return userInfo;
+  };
 
-  // Always navigate to Register, regardless of success or failure
-  navigation.navigate('Register');
-};
-
-// Handle Google Sign-in
-const handleGoogleSignIn = async () => {
-  await GoogleLogin();
-};
-
-  
-  
-  // Handle Phone Number Registration
-  const handlePhoneNumber = async (data) => {
+  const handleGoogleSignIn = async () => {
     try {
-      const phoneRegisterResponse = await axios.post('http://50.18.12.185:8080/YogaApp-0.0.1-SNAPSHOT/user/sendOtp', {
-        userPhoneNumber: "+917904353665"
-      });
-      const response = await phoneRegisterResponse.data;
-      console.log('Phone Registration Success:', response);
-      navigation.navigate('OtpScreen');
+      const response = await GoogleLogin();
+      const { email, idToken } = response.data.user;  // Access user info properly
+
+      // Dispatch action to send data to API
+      await dispatch(googleLogin({ email, idToken }));
+
+      // Navigate on success
+      if (response.data.user) navigation.navigate('Register');
     } catch (error) {
-      console.error('Phone Registration Error:', error.message);
-      if (error.response) {
-        // The request was made and the server responded with a status code that falls out of the range of 2xx
-        console.error('Response error:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.error('Request error:', error.request);
-      } else {
-        // Something happened in setting up the request that triggered an error
-        console.error('Error message:', error.message);
-      }
+      console.error('Login Error:', error);
     }
-    
+  };
+
+  const handlePhoneNumber = () => {
+    navigation.navigate('OtpScreen');
   };
 
   // Choose the theme based on the prop
@@ -107,7 +87,10 @@ const handleGoogleSignIn = async () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+<ScrollView 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  keyboardShouldPersistTaps="handled"
+>
           <View style={styles.container}>
 
             {/* SVG Icons */}
@@ -177,10 +160,11 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start", // Ensure it starts from the top
     alignItems: "center",
-    paddingBottom: 50,
+    paddingBottom: 50, // Default padding
   },
+  
   container: {
     width: "90%",
     alignItems: "center",
