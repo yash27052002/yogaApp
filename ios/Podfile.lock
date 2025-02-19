@@ -1226,6 +1226,8 @@ PODS:
     - React-jsiexecutor
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
+  - react-native-orientation-locker (1.7.0):
+    - React-Core
   - react-native-safe-area-context (5.2.0):
     - DoubleConversion
     - glog
@@ -2034,6 +2036,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-orientation-locker (from `../node_modules/react-native-orientation-locker`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-video (from `../node_modules/react-native-video`)
@@ -2161,6 +2164,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-orientation-locker:
+    :path: "../node_modules/react-native-orientation-locker"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-slider:
@@ -2288,6 +2293,7 @@ SPEC CHECKSUMS:
   React-logger: 9a0c4e1e41cd640ac49d69aacadab783f7e0096b
   React-Mapbuffer: 6993c785c22a170c02489bc78ed207814cbd700f
   React-microtasksnativemodule: 19230cd0933df6f6dc1336c9a9edc382d62638ae
+  react-native-orientation-locker: 5819fd23ca89cbac0d736fb4314745f62716d517
   react-native-safe-area-context: 9c33120e9eac7741a5364cc2d9f74665049b76b3
   react-native-slider: 7885fc2db0361d294b75f0b523040160ce98d526
   react-native-video: c95c10cdac8541f74bd92194dd6a8137ebe6a19d

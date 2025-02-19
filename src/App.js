@@ -20,6 +20,7 @@ import store from './redux/Store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MainLayout from './screens/MainLayout';
 import VideoPlayer from './screens/VideoPlayer';
+import Settings from './screens/Settings';
 
 const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get('window');
@@ -59,6 +60,8 @@ const App = () => {
               <>
                 <Stack.Screen name="HomeTabs" component={HomeTabs} />
                 <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
+                <Stack.Screen name="Settings" component={Settings} />
+
               </>
             ) : (
               <>

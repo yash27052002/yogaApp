@@ -122,9 +122,11 @@ const Home = () => {
   };
 
   const renderNewsItem = ({ item }) => (
-    <View style={styles.newsCard}>
-      <Text style={styles.newsTitle}>{item.title}</Text>
-      <Text style={styles.newsDescription}>{item.description}</Text>
+    <View style={styles.newsCardWrapper}>
+      <View style={styles.newsCard}>
+        <Text style={styles.newsTitle}>{item.title}</Text>
+        <Text style={styles.newsDescription}>{item.description}</Text>
+      </View>
     </View>
   );
 
@@ -305,10 +307,35 @@ const styles = StyleSheet.create({
   hidden: {
     display: "none",
   },
-  newsContainer: {
-    marginVertical: 20,
+  newsCardWrapper: {
+    flex: 1,
+    marginBottom: 30,
+    marginRight: 10,
+    marginTop:20,
+  },
+  newsCard: {
+    flex: 1,
+    padding: 16,
     borderRadius: 10,
-    backgroundColor: "#fff",
+    backgroundColor: "#f4f4f4",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+    height: 100,  // Adjust height to accommodate content, you may need to tweak
+    maxWidth: width * 0.9,  // Ensure the card stays within the page width
+  },
+  newsTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  newsDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 8,
+    flexWrap: "wrap", // Allow wrapping of text if needed
   },
   pagination: {
     flexDirection: "row",
