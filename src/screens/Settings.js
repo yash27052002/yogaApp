@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import Navbar from './Navbar';
 
-const Settings = () => {
+const Settings = ({ navigation }) => {
     const [isLandscape, setIsLandscape] = useState(false); // Track the device orientation
     const { width, height } = Dimensions.get("window");
 
@@ -24,6 +24,12 @@ const Settings = () => {
         <View style={{ flex: 1 }}>
             <Navbar />
             <ScrollView contentContainerStyle={[styles.container, isLandscape && styles.landscapeContainer]}>
+            <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Text style={styles.backIcon}>←</Text> {/* Unicode back arrow */}
+                    </TouchableOpacity>
+                </View>
+
                 <View style={[styles.profileSection, isLandscape && styles.landscapeProfileSection]}>
                     <Image 
                         source={{ uri: 'https://example.com/path-to-your-profile-image.jpg' }} // Update with actual image path
@@ -55,6 +61,23 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         padding: 20,
         backgroundColor: '#f7f7f7',
+    },
+    header: {
+        marginTop: 20,
+        marginBottom: 50,
+        right:10,
+    },
+    backButton: {
+        position: 'absolute',
+        left: 20, // Set left positioning to ensure it's at the left
+        top: 20,  // Set top positioning to place it at the top
+        zIndex: 10, // Ensures it appears above other elements
+        padding: 8,
+        borderRadius: 5,
+    },
+    backIcon: {
+        fontSize: 30,
+        color: '#333', // Set color to ensure it's visible
     },
     landscapeContainer: {
         justifyContent: 'center', // Center content when in landscape mode

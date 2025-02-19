@@ -88,7 +88,7 @@ const Login = ({ theme = "light" }) => {
         style={{ flex: 1 }}
       >
 <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  contentContainerStyle={[styles.scrollContainer]} 
   keyboardShouldPersistTaps="handled"
 >
           <View style={styles.container}>
@@ -108,7 +108,7 @@ const Login = ({ theme = "light" }) => {
                 Login with your Phone Number
               </Text>
 
-              <View style={[styles.inputContainer, { width: isTablet ? "80%" : "100%" }]}>
+              <View style={[styles.inputContainer, { width: isTablet ? 400 : "100%" }]}>
                 <Controller
                   control={control}
                   name="username"
@@ -127,22 +127,36 @@ const Login = ({ theme = "light" }) => {
 
               {/* Buttons */}
               <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
-                  onPress={handleSubmit(handlePhoneNumber)}
-                >
-                  <Text style={styles.buttonText}>Verify with Mobile</Text>
-                </TouchableOpacity>
+              <TouchableOpacity
+  style={[
+    styles.button, 
+    styles.mobileButton, 
+    { 
+      backgroundColor: currentTheme.buttonBackground,
+      width: isTablet && isLandscape ? 400 : "100%" // Fix width in landscape
+    }
+  ]}
+  onPress={handleSubmit(handlePhoneNumber)}
+>
+  <Text style={styles.buttonText}>Verify with Mobile</Text>
+</TouchableOpacity>
 
                 <Text style={[styles.orText, { color: currentTheme.orTextColor }]}>- or -</Text>
 
                 <TouchableOpacity 
-                  style={[styles.button, styles.googleButton, { backgroundColor: currentTheme.googleButtonBackground }]}
-                  onPress={handleGoogleSignIn}
-                >
-                  <GoogleIcon width={25} height={25} />
-                  <Text style={styles.googleText}>Sign in with Google</Text>
-                </TouchableOpacity>
+  style={[
+    styles.button, 
+    styles.googleButton, 
+    { 
+      backgroundColor: currentTheme.googleButtonBackground,
+      width: isTablet && isLandscape ? 400 : "100%" // Fix width in landscape
+    }
+  ]}
+  onPress={handleGoogleSignIn}
+>
+  <GoogleIcon width={25} height={25} />
+  <Text style={styles.googleText}>Sign in with Google</Text>
+</TouchableOpacity>
               </View>
             </View>
           </View>
@@ -163,6 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start", // Ensure it starts from the top
     alignItems: "center",
     paddingBottom: 50, // Default padding
+    marginTop:30
   },
   
   container: {
@@ -222,7 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 20,
     paddingHorizontal: 15,
   },
   googleText: {

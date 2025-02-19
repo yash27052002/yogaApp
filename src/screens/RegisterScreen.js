@@ -61,7 +61,7 @@ const RegisterScreen = ({ theme = "light" }) => {
         style={{ flex: 1 }}
       >
 <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
   keyboardShouldPersistTaps="handled"
 >
           <View style={styles.container}>
@@ -73,7 +73,7 @@ const RegisterScreen = ({ theme = "light" }) => {
               <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
             </View>
 
-            <View style={styles.formContainer}>
+            <View style={[styles.formContainer ,{ width: isTablet ? 400 : "100%" }]}>
               {/* Name Input */}
               <View style={styles.inputWrapper}>
                 <Text style={styles.label}>Name</Text>
@@ -93,7 +93,7 @@ const RegisterScreen = ({ theme = "light" }) => {
               </View>
 
               {/* Age Input */}
-              <View style={styles.inputWrapper}>
+              <View style={[styles.inputWrapper , { width: isTablet ? 400 : "100%" }]}>
                 <Text style={styles.label}>Age</Text>
                 <Controller
                   control={control}
@@ -113,7 +113,7 @@ const RegisterScreen = ({ theme = "light" }) => {
 
               <View style={styles.buttonRow}>
                 <TouchableOpacity
-                  style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
+                  style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground ,width: isTablet && isLandscape ? 400 : "100%"}]}
                   onPress={handleSubmit(handleContinue)}
                 >
                   <Text style={[styles.buttonText]}>Continue</Text>

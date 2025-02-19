@@ -97,7 +97,7 @@ const Preferance = ({ theme = "light" }) => {
         style={{ flex: 1 }}
       >
       <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
   keyboardShouldPersistTaps="handled"
 >          <View style={styles.container}>
             {/* SVG Icons */}
@@ -133,7 +133,7 @@ const Preferance = ({ theme = "light" }) => {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]}
+              style={[styles.button, { backgroundColor: currentTheme.buttonBackground , width: isTablet ? 400 : "100%"  }]}
               onPress={handleSubmit(onSubmit)} // This will trigger onSubmit function
             >
               <Text style={[styles.buttonText]}>Submit</Text>
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    gap: 10,  // Adjust spacing between buttons
+    gap: 70,  // Adjust spacing between buttons
     marginBottom: 30,
   },
   godButton: {

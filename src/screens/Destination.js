@@ -81,7 +81,7 @@ const Destination = ({ theme = "light" }) => {
     >
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
       <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
   keyboardShouldPersistTaps="handled"
 >          <View style={styles.container}>
           <View style={styles.svgContainer}>
@@ -93,7 +93,7 @@ const Destination = ({ theme = "light" }) => {
             </View>
             
             {/* Destination Dropdown */}
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer ,{ width: isTablet ? 400 : "100%" }]}>
               <TouchableOpacity style={styles.dropdown} onPress={() => setDestinationModalVisible(true)}>
                 <Text style={styles.dropdownText}>{selectedDestination}</Text>
               </TouchableOpacity>
@@ -130,7 +130,7 @@ const Destination = ({ theme = "light" }) => {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]}
+              style={[styles.button, { backgroundColor: currentTheme.buttonBackground , width: isTablet ? 400 : "100%" }]}
               onPress={handleSubmit(onSubmit)}
             >
               <Text style={[styles.buttonText]}>Submit</Text>

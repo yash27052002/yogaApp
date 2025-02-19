@@ -41,7 +41,7 @@ const Categories = () => {
     const renderSection = (title, content) => (
         <View key={title} style={styles.section}>
             <Text style={[styles.sectionTitle, isTablet && styles.sectionTitleTablet]}>
-                {title} {/* Ensuring section title is wrapped in Text */}
+                {title} 
             </Text>
             <ScrollView 
                 horizontal 

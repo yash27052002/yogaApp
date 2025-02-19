@@ -101,7 +101,7 @@ const handleConfirmTime = () => {
     <LinearGradient style={styles.login} locations={[0, 1]} colors={["#dacaff", "#f4ffe1"]} useAngle={true} angle={180}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
       <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
+  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
   keyboardShouldPersistTaps="handled"
 >          <View style={styles.container}>
             {/* SVG Icons */}
@@ -114,7 +114,7 @@ const handleConfirmTime = () => {
             </View>
 
             {/* Time Selector */}
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer , { width: isTablet ? 400 : "100%" }]}>
               <TouchableOpacity style={styles.dropdown} onPress={() => setShowTimePicker(true)}>
                 <Text style={styles.dropdownText}>
                   {selectedTime
@@ -136,14 +136,14 @@ const handleConfirmTime = () => {
 
 {/* Show Confirm Button after selecting both hours and minutes */}
 {showConfirmButton && (
-  <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmTime}>
+  <TouchableOpacity style={[styles.confirmButton ,{ width: isTablet ? 400 : "100%" }]} onPress={handleConfirmTime}>
     <Text style={styles.confirmButtonText}>Confirm Time</Text>
   </TouchableOpacity>
 )}
 
 
             {/* Submit Button */}
-            <TouchableOpacity style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]} onPress={handleSubmit(onSubmit)}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: currentTheme.buttonBackground ,width: isTablet ? 400 : "100%" }]} onPress={handleSubmit(onSubmit)}>
               <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
           </View>
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     marginTop: 20,
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#fff",
     borderRadius: 25,
     paddingVertical: 10,
     width: "80%",
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     fontSize: 16,
-    color: "#fff",
+    color: "#000",
   },
   
   buttonText: {

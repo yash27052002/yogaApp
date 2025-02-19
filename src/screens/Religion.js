@@ -8,69 +8,53 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Modal,
-  FlatList,
   useWindowDimensions,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
-import { useForm, Controller } from "react-hook-form";
-
-// Import SVG icons
+import { Picker } from "@react-native-picker/picker";
 import Ellipse1 from "../assets/Ellipse1.svg";
 import Ellipse2 from "../assets/Ellipse2.svg";
 import Ellipse3 from "../assets/Ellipse3.svg";
 import Ellipse4 from "../assets/Ellipse4.svg";
 import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-
-// Import themes
 import { lightTheme, darkTheme } from "../styles/themes.js";
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from "react-redux";
 import { setReligion } from "../redux/formSlice.js";
+import { useForm } from "react-hook-form";
 
 const { width, height } = Dimensions.get("window");
 
 const Religion = ({ theme = "light" }) => {
-
   const navigation = useNavigation();
-
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 768;
   const isLandscape = width > height; // Detect landscape orientation
 
-
   const { control, handleSubmit, setValue } = useForm();
   const dispatch = useDispatch();
 
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedReligion, setSelectedReligion] = useState("Select Religion");
+  const [showPicker, setShowPicker] = useState(false); // Initialize state for showing the picker
 
   // List of religions for dropdown
   const religions = ["Hinduism", "Christianity", "Islam", "Buddhism", "Sikhism", "Jainism", "Others"];
 
   // Function to handle selection
-  const handleSelectReligion =  (religion) => {
-    
+  const handleSelectReligion = (religion) => {
     setSelectedReligion(religion);
+    setShowPicker(false);
     setValue("religion", religion); // Set value in react-hook-form
-    setModalVisible(false);
   };
 
-  const handleContinue = async (selectedReligion) =>{
+  const handleContinue = async () => {
     navigation.navigate('Destination');
-    console.log("data passed to redux", selectedReligion)
-
-    await dispatch(setReligion(data)); 
-  }
+    console.log("data passed to redux", selectedReligion);
+    await dispatch(setReligion(selectedReligion));
+  };
 
   // Choose the theme based on the passed prop or context
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-
-
-  // onSubmit function to handle form submission
-  const onSubmit = (data) => {
-    console.log("Selected Religion:", data.religion);
-  };
 
   return (
     <LinearGradient
@@ -84,11 +68,11 @@ const Religion = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-<ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 0.6 }] }]} 
-  keyboardShouldPersistTaps="handled"
->          <View style={styles.container}>
-            {/* SVG Icons */}
+        <ScrollView 
+          contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
             <View style={styles.svgContainer}>
               <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
               <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
@@ -97,35 +81,35 @@ const Religion = ({ theme = "light" }) => {
               <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
             </View>
 
-            {/* Custom Dropdown */}
-            <View style={styles.inputContainer}>
-              <TouchableOpacity style={styles.dropdown} onPress={() => setModalVisible(true)}>
-                <Text style={styles.dropdownText}>{selectedReligion}</Text>
+            <View style={[styles.inputContainer , { width: isTablet ? 400 : "100%" }]}>
+              <TouchableOpacity
+                onPress={() => setShowPicker(!showPicker)} // Toggle picker visibility
+                style={styles.pickerContainer}
+              >
+                <Text style={styles.pickerText}>{selectedReligion}</Text>
               </TouchableOpacity>
+
+              {/* Render Picker only when it's needed */}
+              {showPicker && (
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    selectedValue={selectedReligion}
+                    onValueChange={(itemValue) => handleSelectReligion(itemValue)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Select Religion" value="Select Religion" />
+                    {religions.map((religion, index) => (
+                      <Picker.Item key={index} label={religion} value={religion} />
+                    ))}
+                  </Picker>
+                </View>
+              )}
             </View>
 
-            {/* Dropdown Modal */}
-            <Modal transparent={true} visible={modalVisible} animationType="fade">
-              <TouchableOpacity style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-                <View style={styles.modalContainer}>
-                  <FlatList
-                    data={religions}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity style={styles.option} onPress={() => handleSelectReligion(item)}>
-                        <Text style={styles.optionText}>{item}</Text>
-                      </TouchableOpacity>
-                    )}
-                  />
-                </View>
-              </TouchableOpacity>
-            </Modal>
-
-            {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: currentTheme.buttonBackground }]}
-              onPress={() => handleContinue(selectedReligion)}
->
+              style={[styles.button, { backgroundColor: currentTheme.buttonBackground ,  width: isTablet ? 400 : "100%" }]}
+              onPress={handleContinue}
+            >
               <Text style={[styles.buttonText]}>Continue</Text>
             </TouchableOpacity>
           </View>
@@ -176,36 +160,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
     backgroundColor: "#fff",
+    position: "relative",  // Required for absolute positioning of the picker
   },
-  dropdown: {
+  pickerContainer: {
     width: "100%",
-    height: "100%",
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
+    paddingLeft: 10,
   },
-  dropdownText: {
-    fontSize: 16,
+  pickerText: {
     color: "#000",
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    width: "80%",
+  pickerWrapper: {
+    position: "absolute",
+    top: 50, // Adjust the distance for Picker visibility
+    left: 10,
+    right: 0,
     backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 10,
+    zIndex: 10,
+    paddingHorizontal: 10,
   },
-  option: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  optionText: {
-    fontSize: 16,
+  picker: {
+    width: "100%",
+    height: 150, // Set a fixed height for Picker
+    backgroundColor: "#fff",
     color: "#000",
   },
   button: {
