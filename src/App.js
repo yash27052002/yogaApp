@@ -4,14 +4,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider } from 'react-redux';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from './screens/LoginScreen';
-import RegisterScreen from './screens/RegisterScreen';
+import LoginScreen from './screens/login/LoginScreen';
+import RegisterScreen from './screens/register/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
-import OtpScreen from './screens/OtpScreen';
-import Religion from './screens/Religion';
-import Destination from './screens/Destination';
-import BoardingTime from './screens/BoardingTime';
-import Preferance from './screens/Preferance';
+import OtpScreen from './screens/login/OtpScreen';
+import Religion from './screens/register/Religion';
+import Destination from './screens/register/Destination';
+import BoardingTime from './screens/register/BoardingTime';
+import Preference from './screens/register/Preference';
 import Loading from './screens/Loading';
 import Coaches from './screens/Coaches';
 import Categories from './screens/Categories';
@@ -71,7 +71,7 @@ const App = () => {
                 <Stack.Screen name="Religion" component={Religion} />
                 <Stack.Screen name="Destination" component={Destination} />
                 <Stack.Screen name="BoardingTime" component={BoardingTime} />
-                <Stack.Screen name="Preferance" component={Preferance} />
+                <Stack.Screen name="Preference" component={Preference} />
                 <Stack.Screen name="Loading" component={Loading} />
                 <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
               </>

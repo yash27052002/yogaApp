@@ -42,6 +42,18 @@ const Home = () => {
   const [windowHeight, setWindowHeight] = useState(height);
 
   const flatListRef = useRef(null);
+useEffect(()=>{
+  const dataAsync = async ()=>{
+    const storedBoardingTime = await AsyncStorage.getItem("boardingTime");
+    const userName = await AsyncStorage.getItem("userName");
+  
+    console.log(storedBoardingTime, userName)
+    setBoardingTime(storedBoardingTime);
+    setName(userName);
+  };
+  dataAsync();
+}, [])
+
 
   useEffect(() => {
     const fetchBoardingTime = async () => {
@@ -265,7 +277,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 28,
     fontWeight: "600",
-    color: "#0066cc",
+    color: "#000",
   },
   journeyText: {
     fontSize: 14,

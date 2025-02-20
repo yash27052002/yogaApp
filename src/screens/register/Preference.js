@@ -8,33 +8,26 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Modal,
-  FlatList,
-  useWindowDimensions,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
-import { useForm, Controller } from "react-hook-form";
-import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from "react-redux";
+import { setPreference } from "../../redux/formSlice"; // Import Redux action
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Import SVG icons
-import Ellipse1 from "../assets/Ellipse1.svg";
-import Ellipse2 from "../assets/Ellipse2.svg";
-import Ellipse3 from "../assets/Ellipse3.svg";
-import Ellipse4 from "../assets/Ellipse4.svg";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
+import Ellipse1 from "../../assets/Ellipse1.svg";
+import Ellipse2 from "../../assets/Ellipse2.svg";
+import Ellipse3 from "../../assets/Ellipse3.svg";
+import Ellipse4 from "../../assets/Ellipse4.svg";
+import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 
-// Import themes
-import { lightTheme, darkTheme } from "../styles/themes.js";
+const { width } = Dimensions.get("window");
 
-const { width, height } = Dimensions.get("window");
-
-const Preferance = ({ theme = "light" }) => {
+const Preference = ({ theme = "light" }) => {
   const navigation = useNavigation();
-  const { control, handleSubmit, setValue } = useForm();
-  const [modalVisible, setModalVisible] = useState(false);
+  const dispatch = useDispatch();
   const [selectedGods, setSelectedGods] = useState([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // List of god names
   const gods = [
@@ -51,7 +44,7 @@ const Preferance = ({ theme = "light" }) => {
     "Saraswathi",
   ];
 
-  // Function to handle button press and toggle selection
+  // Toggle selection of preferences
   const handleSelectGod = (god) => {
     setSelectedGods((prevSelectedGods) =>
       prevSelectedGods.includes(god)
@@ -60,28 +53,31 @@ const Preferance = ({ theme = "light" }) => {
     );
   };
 
-  // Choose the theme based on the passed prop or context
-  const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-
-  const { width, height } = useWindowDimensions();
-  const isTablet = width >= 768;
-  const isLandscape = width > height; // Detect landscape orientation
-
   const storeRandomCode = async () => {
-    const randomCode = Math.random().toString(36).substring(7); // Generates a random string
+    const randomCode = Math.random().toString(36).substring(7);
     try {
-      await AsyncStorage.setItem('randomCode', randomCode);
-      console.log('Random code stored:', randomCode); // Optional: Log the stored code for confirmation
+      await AsyncStorage.setItem("randomCode", randomCode);
+      console.log("Random code stored:", randomCode);
     } catch (error) {
-      console.error('Error storing random code', error);
+      console.error("Error storing random code", error);
     }
   };
 
-  // onSubmit function to handle form submission
+  // Submit form and update Redux store
   const onSubmit = () => {
     storeRandomCode();
-    console.log("Selected Religion:", selectedGods);
-    setIsAuthenticated(true);
+
+    // Map selected preferences to expected structure
+    const formattedPreferences = selectedGods.map((name, index) => ({
+      preferencesId: index + 1,
+      preferencesName: name,
+    }));
+
+    // Dispatch the action
+    dispatch(setPreference(formattedPreferences));
+
+    console.log("Selected Preferences:", formattedPreferences);
+    navigation.navigate("NextScreen"); // Change to your next screen
   };
 
   return (
@@ -96,19 +92,21 @@ const Preferance = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-      <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
-  keyboardShouldPersistTaps="handled"
->          <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
-              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
-              <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
-              <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
-              <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
-              <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
+              <Ellipse1 width={7} height={7} style={styles.svgItem} />
+              <Ellipse2 width={15} height={14} style={styles.svgItem} />
+              <Ellipse3 width={22} height={22} style={styles.svgItem} />
+              <Ellipse4 width={30} height={29} />
+              <LotusYoga width={100} height={171} style={styles.lotusIcon} />
             </View>
 
+            {/* Preference Selection */}
             <View style={styles.godButtonsContainer}>
               {gods.map((god) => (
                 <TouchableOpacity
@@ -133,10 +131,10 @@ const Preferance = ({ theme = "light" }) => {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: currentTheme.buttonBackground , width: isTablet ? 400 : "100%"  }]}
-              onPress={handleSubmit(onSubmit)} // This will trigger onSubmit function
+              style={styles.button}
+              onPress={onSubmit} // Directly call onSubmit
             >
-              <Text style={[styles.buttonText]}>Submit</Text>
+              <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -175,23 +173,11 @@ const styles = StyleSheet.create({
   lotusIcon: {
     marginTop: -20,
   },
-  inputContainer: {
-    width: "100%",
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#000",
-    borderRadius: 25,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-    backgroundColor: "#fff",
-  },
   godButtonsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    gap: 70,  // Adjust spacing between buttons
+    gap: 10,
     marginBottom: 30,
   },
   godButton: {
@@ -217,12 +203,14 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 25,
     alignItems: "center",
+    backgroundColor: "#6a4cff",
     marginBottom: 10,
   },
   buttonText: {
     fontSize: 15,
     textAlign: "center",
+    color: "#fff",
   },
 });
 
-export default Preferance;
+export default Preference;

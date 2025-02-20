@@ -13,39 +13,48 @@ import {
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
-import { useDispatch } from "react-redux";
-import { setUserData } from "../redux/formSlice"; 
+import { useDispatch, useSelector } from "react-redux"; // Import Redux
+import { setUserData } from "../../redux/formSlice"; 
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-import Ellipse1 from "../assets/Ellipse1.svg";
-import Ellipse2 from "../assets/Ellipse2.svg";
-import Ellipse3 from "../assets/Ellipse3.svg";
-import Ellipse4 from "../assets/Ellipse4.svg";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
+import Ellipse1 from "../../assets/Ellipse1.svg";
+import Ellipse2 from "../../assets/Ellipse2.svg";
+import Ellipse3 from "../../assets/Ellipse3.svg";
+import Ellipse4 from "../../assets/Ellipse4.svg";
+import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 
-import { lightTheme, darkTheme } from "../styles/themes.js"; 
+import { lightTheme, darkTheme } from "../../styles/themes.js"; 
 
 const { width, height } = Dimensions.get("window");
 
 const RegisterScreen = ({ theme = "light" }) => {
-  const { control, handleSubmit } = useForm();
+  const { control, handleSubmit,getValues } = useForm();
   const dispatch = useDispatch();
   const navigation = useNavigation();
+
+  const userData = useSelector((state) => state.user);
+
 
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 768;
   const isLandscape = width > height; // Detect landscape orientation
 
 
-  const handleContinue = async (data) => {
+  const handleContinue = async () => {
+    const { name, age } = getValues();
 
-    console.log('Navigating to Religion');
-    navigation.navigate('Religion');
+    // Dispatch to Redux
+    dispatch(setUserData({ name, age }));
 
+    // Log the updated Redux state
+    console.log("Updated Redux State:", userData);
+    await AsyncStorage.setItem('userName',name);
+
+    // Navigate to next screen
+    navigation.navigate("Religion");
   };
-
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
 
   return (

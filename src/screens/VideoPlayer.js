@@ -13,8 +13,8 @@ const VideoPlayer = ({ navigation }) => {
   const videoRef = useRef(null);
 
   const { width, height } = useWindowDimensions();
-  const isLandscape = width > height; // Detect landscape mode
-  const videoHeight = isLandscape ? height : 200; // Full height in landscape
+  const isTablet = width >= 768;
+  const isLandscape = width > height; // Detect landscape orientation
   const [watchedTime, setWatchedTime] = useState(0);
   const [lastRecordedTime, setLastRecordedTime] = useState(0);
   const [skippedSections, setSkippedSections] = useState([]);
@@ -69,7 +69,7 @@ const VideoPlayer = ({ navigation }) => {
         </View>
 
         {/* Video Wrapper */}
-        <View style={[styles.videoWrapper, { height: isFullScreen ? height : 600 }]}>
+        <View style={[styles.videoWrapper, {height: isLandscape ? 500 : 200}]}>
           <Video
             ref={videoRef}
             source={{ uri: 'https://www.w3schools.com/html/mov_bbb.mp4' }}

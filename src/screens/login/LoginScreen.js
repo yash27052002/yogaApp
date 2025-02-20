@@ -16,17 +16,17 @@ import { useNavigation } from "@react-navigation/native";
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 // Import SVG icons
-import Ellipse1 from "../assets/Ellipse1.svg";
-import Ellipse2 from "../assets/Ellipse2.svg";
-import Ellipse3 from "../assets/Ellipse3.svg";
-import Ellipse4 from "../assets/Ellipse4.svg";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-import GoogleIcon from "../assets/google-color_svgrepo.com.svg";
+import Ellipse1 from "../../assets/Ellipse1.svg";
+import Ellipse2 from "../../assets/Ellipse2.svg";
+import Ellipse3 from "../../assets/Ellipse3.svg";
+import Ellipse4 from "../../assets/Ellipse4.svg";
+import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
+import GoogleIcon from "../../assets/google-color_svgrepo.com.svg";
 
 // Import themes
-import { lightTheme, darkTheme } from "../styles/themes.js"; 
+import { lightTheme, darkTheme } from "../../styles/themes.js"; 
 import { useDispatch } from 'react-redux';
-import { googleLogin } from '../redux/authSlice.js'; // Import your action
+import { googleLogin } from '../../redux/authSlice.js'; // Import your action
 
 
 GoogleSignin.configure({

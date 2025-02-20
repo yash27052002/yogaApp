@@ -2,15 +2,15 @@ import React, { useState, useRef } from "react";
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, ScrollView, useWindowDimensions, KeyboardAvoidingView, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 
-import Ellipse1 from "../assets/Ellipse1.svg";
-import Ellipse2 from "../assets/Ellipse2.svg";
-import Ellipse3 from "../assets/Ellipse3.svg";
-import Ellipse4 from "../assets/Ellipse4.svg";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-import { lightTheme, darkTheme } from "../styles/themes.js"; 
+import Ellipse1 from "../../assets/Ellipse1.svg";
+import Ellipse2 from "../../assets/Ellipse2.svg";
+import Ellipse3 from "../../assets/Ellipse3.svg";
+import Ellipse4 from "../../assets/Ellipse4.svg";
+import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
+import { lightTheme, darkTheme } from "../../styles/themes.js"; 
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from "react-redux";
-import { verifyOtp } from '../redux/authSlice'; // Rename to avoid conflict with function name
+import { verifyOtp } from '../../../../redux/authSlice.js'; // Rename to avoid conflict with function name
 import axios from 'axios';
 
 const { width, height } = Dimensions.get("window");

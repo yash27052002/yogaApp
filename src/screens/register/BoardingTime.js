@@ -1,44 +1,52 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, KeyboardAvoidingView, Platform, TextInput, useWindowDimensions } from "react-native";
+import { 
+  View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, 
+  KeyboardAvoidingView, Platform, useWindowDimensions 
+} from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
-// Import SVG icons
-import Ellipse1 from "../assets/Ellipse1.svg";
-import Ellipse2 from "../assets/Ellipse2.svg";
-import Ellipse3 from "../assets/Ellipse3.svg";
-import Ellipse4 from "../assets/Ellipse4.svg";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Redux
+import { useDispatch, useSelector } from "react-redux";
+import { setBoardingTime } from "../../redux/formSlice.js";
+
+// Import SVG icons
+import Ellipse1 from "../../assets/Ellipse1.svg";
+import Ellipse2 from "../../assets/Ellipse2.svg";
+import Ellipse3 from "../../assets/Ellipse3.svg";
+import Ellipse4 from "../../assets/Ellipse4.svg";
+import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 
 // Import themes
-import { lightTheme, darkTheme } from "../styles/themes.js";
+import { lightTheme, darkTheme } from "../../styles/themes.js";
 
 const { width } = Dimensions.get("window");
 
 const BoardingTime = ({ theme = "light" }) => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 768;
-  const isLandscape = width > height; // Detect landscape orientation
+  const isLandscape = width > height;
 
-  const { control, handleSubmit, setValue, getValues } = useForm({
+  const { control, handleSubmit, setValue } = useForm({
     defaultValues: {
-      boardingTime: "", // Start with an empty string for the time
+      boardingTime: "",
     },
   });
 
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [manualTime, setManualTime] = useState("");
   const [selectedHours, setSelectedHours] = useState(null);
-const [selectedMinutes, setSelectedMinutes] = useState(null);
-const [showConfirmButton, setShowConfirmButton] = useState(false);
+  const [selectedMinutes, setSelectedMinutes] = useState(null);
+  const [showConfirmButton, setShowConfirmButton] = useState(false);
 
-  // Set the initial boarding time when the component mounts
+  // Redux State
+  const boardingTimeData = useSelector((state) => state.user);
+
   useEffect(() => {
     setValue("boardingTime", selectedTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
   }, [selectedTime, setValue]);
@@ -49,50 +57,34 @@ const [showConfirmButton, setShowConfirmButton] = useState(false);
       const hour = selectedDate.getHours();
       const minute = selectedDate.getMinutes();
   
-      // Update hours and minutes
       setSelectedHours(hour);
       setSelectedMinutes(minute);
   
-      // Show the confirm button only after both hour and minute are selected
       if (selectedHours !== null && selectedMinutes !== null) {
         setShowConfirmButton(true);
       }
     }
   };
 
-  // Function to handle manual time input
-  const handleManualTimeChange = (time) => {
-    // Validate and format manual input, e.g., "14:30"
-    const regex = /^([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])$/;
-    if (regex.test(time)) {
-      setManualTime(time);
-      setSelectedTime(new Date(`1970-01-01T${time}:00`)); // Set selectedTime based on the manual input
-      setValue("boardingTime", time); // Update the form value
-    } else {
-      // Optionally, show an error for invalid time format
-      console.log("Invalid time format");
-    }
-  };
-  // Show a confirm button after selecting both hours and minutes
-const handleConfirmTime = () => {
-  // Set the selected time based on the selected hours and minutes
-  const newSelectedTime = new Date();
-  newSelectedTime.setHours(selectedHours);
-  newSelectedTime.setMinutes(selectedMinutes);
+  const handleConfirmTime = () => {
+    const newSelectedTime = new Date();
+    newSelectedTime.setHours(selectedHours);
+    newSelectedTime.setMinutes(selectedMinutes);
   
-  setSelectedTime(newSelectedTime);
-  setShowTimePicker(false); // Close the time picker
-  setShowConfirmButton(false);
-
-};
-
+    setSelectedTime(newSelectedTime);
+    setShowTimePicker(false);
+    setShowConfirmButton(false);
+  };
 
   const onSubmit = async (data) => {
-    console.log("Form data:", data);  // Log form data directly
-    console.log("Selected Boarding Time:", data.boardingTime); // Log the form value directly
+    dispatch(setBoardingTime(data.boardingTime));  // ✅ Dispatch Redux action
+    console.log("Form data:", data);
+
     await AsyncStorage.setItem('boardingTime', data.boardingTime);
 
-    navigation.navigate("Preferance");
+      console.log("Updated Redux State:", boardingTimeData); // ✅ Log Redux State
+      navigation.navigate("Preference");  // ✅ Navigate after Redux update
+
   };
 
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
@@ -100,10 +92,8 @@ const handleConfirmTime = () => {
   return (
     <LinearGradient style={styles.login} locations={[0, 1]} colors={["#dacaff", "#f4ffe1"]} useAngle={true} angle={180}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-      <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
-  keyboardShouldPersistTaps="handled"
->          <View style={styles.container}>
+        <ScrollView contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} keyboardShouldPersistTaps="handled">
+          <View style={styles.container}>
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
               <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
@@ -114,7 +104,7 @@ const handleConfirmTime = () => {
             </View>
 
             {/* Time Selector */}
-            <View style={[styles.inputContainer , { width: isTablet ? 400 : "100%" }]}>
+            <View style={[styles.inputContainer, { width: isTablet ? 400 : "100%" }]}>
               <TouchableOpacity style={styles.dropdown} onPress={() => setShowTimePicker(true)}>
                 <Text style={styles.dropdownText}>
                   {selectedTime
@@ -125,25 +115,24 @@ const handleConfirmTime = () => {
             </View>
 
             {showTimePicker && (
-  <DateTimePicker
-    value={selectedTime}
-    mode="time"
-    is24Hour={true}
-    display={Platform.OS === "ios" ? "spinner" : "default"}
-    onChange={handleTimeChange}
-  />
-)}
+              <DateTimePicker
+                value={selectedTime}
+                mode="time"
+                is24Hour={true}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={handleTimeChange}
+              />
+            )}
 
-{/* Show Confirm Button after selecting both hours and minutes */}
-{showConfirmButton && (
-  <TouchableOpacity style={[styles.confirmButton ,{ width: isTablet ? 400 : "100%" }]} onPress={handleConfirmTime}>
-    <Text style={styles.confirmButtonText}>Confirm Time</Text>
-  </TouchableOpacity>
-)}
-
+            {/* Show Confirm Button */}
+            {showConfirmButton && (
+              <TouchableOpacity style={[styles.confirmButton, { width: isTablet ? 400 : "100%" }]} onPress={handleConfirmTime}>
+                <Text style={styles.confirmButtonText}>Confirm Time</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Submit Button */}
-            <TouchableOpacity style={[styles.button, { backgroundColor: currentTheme.buttonBackground ,width: isTablet ? 400 : "100%" }]} onPress={handleSubmit(onSubmit)}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: currentTheme.buttonBackground, width: isTablet ? 400 : "100%" }]} onPress={handleSubmit(onSubmit)}>
               <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
           </View>
@@ -205,19 +194,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
   },
-  manualInput: {
-    width: "100%",
-    height: 40,
-    textAlign: "center",
-    fontSize: 16,
-  },
-  button: {
-    width: "100%",
-    padding: 12,
-    borderRadius: 25,
-    alignItems: "center",
-    marginBottom: 10,
-  },
   confirmButton: {
     marginTop: 20,
     backgroundColor: "#fff",
@@ -230,7 +206,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
   },
-  
+  button: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 25,
+    alignItems: "center",
+    marginBottom: 10,
+  },
   buttonText: {
     fontSize: 15,
     textAlign: "center",
