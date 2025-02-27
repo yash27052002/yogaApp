@@ -1,14 +1,5 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useDispatch } from "react-redux";
 import { setPreference } from "../../redux/formSlice"; // Import Redux action
@@ -23,35 +14,67 @@ import Ellipse4 from "../../assets/Ellipse4.svg";
 import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 
 const { width } = Dimensions.get("window");
+import { useSelector } from 'react-redux';
+
 
 const Preference = ({ theme = "light" }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [selectedGods, setSelectedGods] = useState([]);
+  const [preferencesList, setPreferencesList] = useState([]); // Store preferences list
+  const [loading, setLoading] = useState(true); // Loading state
 
-  // List of god names
-  const gods = [
-    "Shiva",
-    "Vishnu",
-    "Brahma",
-    "Krishna",
-    "Ganesha",
-    "Karthikeya",
-    "Hanuman",
-    "Durga",
-    "Parvathi",
-    "Lakshmi",
-    "Saraswathi",
-  ];
+  // Fetch preferences list from the API
+  useEffect(() => {
+    const fetchPreferences = async () => {
+      try {
+        const jwt = await AsyncStorage.getItem("jwtToken");
+        console.log(jwt)
+        const response = await fetch("http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/preferences/getAllPreference", {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        });
+    
+        const jsonData = await response.json(); // Directly parse JSON
+        console.log("Parsed Data:", jsonData); // Check if the 'data' field is an array
+        if (Array.isArray(jsonData.data)) {
+          setPreferencesList(jsonData.data);
+        } else {
+          console.log("Received data is not an array:", jsonData);
+        }
+      } catch (error) {
+        console.error("Error fetching preferences:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+  
+    fetchPreferences();
+  }, []);
+
+  // Get user data from Redux store
+  const { name, age, religion, destination, boardingTime, preferences } = useSelector((state) => state.user);
 
   // Toggle selection of preferences
   const handleSelectGod = (god) => {
-    setSelectedGods((prevSelectedGods) =>
-      prevSelectedGods.includes(god)
+    setSelectedGods((prevSelectedGods) => {
+      const updatedSelectedGods = prevSelectedGods.includes(god)
         ? prevSelectedGods.filter((item) => item !== god)
-        : [...prevSelectedGods, god]
-    );
+        : [...prevSelectedGods, god];
+  
+      // Log selected preferences' name and ID
+      const selectedPreferences = preferencesList.filter((preference) =>
+        updatedSelectedGods.includes(preference.preferencesName)
+      );
+  
+      console.log("Selected Preferences:", selectedPreferences);
+  
+      return updatedSelectedGods;
+    });
   };
+  
 
   const storeRandomCode = async () => {
     const randomCode = Math.random().toString(36).substring(7);
@@ -64,38 +87,63 @@ const Preference = ({ theme = "light" }) => {
   };
 
   // Submit form and update Redux store
-  const onSubmit = () => {
-    storeRandomCode();
-
-    // Map selected preferences to expected structure
-    const formattedPreferences = selectedGods.map((name, index) => ({
-      preferencesId: index + 1,
-      preferencesName: name,
-    }));
-
-    // Dispatch the action
-    dispatch(setPreference(formattedPreferences));
-
-    console.log("Selected Preferences:", formattedPreferences);
-    navigation.navigate("NextScreen"); // Change to your next screen
+  const onSubmit = async () => {
+    const userId = await AsyncStorage.getItem("userId"); 
+    const jwt = await AsyncStorage.getItem("jwtToken"); 
+  
+    // Format selected preferences
+    const preferencesFormatted = preferencesList
+      .filter((preference) => selectedGods.includes(preference.preferencesName))
+      .map(({ preferencesId, preferencesName }) => ({ preferencesId, preferencesName }));
+  
+    // Dispatch Redux action
+    dispatch(setPreference(preferencesFormatted)); // Do NOT await here
+  
+    const requestBody = {
+      userId: userId,
+      userName: name,
+      userAge: age,
+      userReligion: religion,
+      userTravelDestination: destination,
+      userTravelBoardingTime: boardingTime,
+      preferences: preferencesFormatted, // Use formatted preferences
+    };
+  
+    console.log("Request Body:", requestBody);
+  
+    try {
+      const response = await fetch("http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/registerUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP Error! Status: ${response.status}, Message: ${errorText}`);
+      }
+  
+      const data = await response.json();
+      console.log("Response Data:", data);
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
   };
+  
+  
+  
+
+  if (loading) {
+    return <Text>Loading preferences...</Text>; // Show loading message while fetching data
+  }
 
   return (
-    <LinearGradient
-      style={styles.login}
-      locations={[0, 1]}
-      colors={["#dacaff", "#f4ffe1"]}
-      useAngle={true}
-      angle={180}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-        >
+    <LinearGradient style={styles.login} locations={[0, 1]} colors={["#dacaff", "#f4ffe1"]} useAngle={true} angle={180}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
@@ -108,32 +156,21 @@ const Preference = ({ theme = "light" }) => {
 
             {/* Preference Selection */}
             <View style={styles.godButtonsContainer}>
-              {gods.map((god) => (
+              {preferencesList.map((preference) => (
                 <TouchableOpacity
-                  key={god}
-                  style={[
-                    styles.godButton,
-                    selectedGods.includes(god) && styles.selectedButton,
-                  ]}
-                  onPress={() => handleSelectGod(god)}
+                  key={preference.preferencesId}
+                  style={[styles.godButton, selectedGods.includes(preference.preferencesName) && styles.selectedButton]}
+                  onPress={() => handleSelectGod(preference.preferencesName)}
                 >
-                  <Text
-                    style={[
-                      styles.godButtonText,
-                      selectedGods.includes(god) && styles.selectedButtonText,
-                    ]}
-                  >
-                    {god}
+                  <Text style={[styles.godButtonText, selectedGods.includes(preference.preferencesName) && styles.selectedButtonText]}>
+                    {preference.preferencesName}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
             {/* Submit Button */}
-            <TouchableOpacity
-              style={styles.button}
-              onPress={onSubmit} // Directly call onSubmit
-            >
+            <TouchableOpacity style={styles.button} onPress={onSubmit}>
               <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
           </View>
@@ -207,9 +244,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   buttonText: {
-    fontSize: 15,
-    textAlign: "center",
     color: "#fff",
+    fontSize: 16,
   },
 });
 

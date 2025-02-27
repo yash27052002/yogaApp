@@ -10,7 +10,7 @@ import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 import { lightTheme, darkTheme } from "../../styles/themes.js"; 
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from "react-redux";
-import { verifyOtp } from '../../../../redux/authSlice.js'; // Rename to avoid conflict with function name
+import { verifyOtp } from '../../redux/authSlice.js'; // Rename to avoid conflict with function name
 import axios from 'axios';
 
 const { width, height } = Dimensions.get("window");
@@ -46,8 +46,23 @@ const OtpScreen = ({ theme = "light" }) => {
     setOtp(newOtp);
   };
 
-  const verifyOtp = async () => {
-    navigation.navigate('Register');
+  const handleVerifyOtp = () => {
+    const otpValue = otp.join(""); // Convert array to a string
+    if (otpValue.length < 4) {
+      alert("Please enter a valid 4-digit OTP.");
+      return;
+    }
+    
+    // Dispatch Redux action
+    dispatch(verifyOtp({ userOtp: otpValue, navigation }))
+    .unwrap()
+      .then((response) => {
+        alert("OTP verified successfully! Please check your phone.");
+      })
+      .catch((error) => {
+        alert("Failed to verify OTP: " + error);
+        console.log("Failed to verify OTP: " + error)
+      });
   };
 
   return (
@@ -102,7 +117,7 @@ const OtpScreen = ({ theme = "light" }) => {
             <View style={styles.verifyOtpWrapper}>
               <TouchableOpacity
                 style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
-                onPress={verifyOtp}
+                onPress={handleVerifyOtp}
               >
                 <Text style={[styles.buttonText]}>
                   Verify Otp

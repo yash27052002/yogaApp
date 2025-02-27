@@ -42,7 +42,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('randomCode');
+      await AsyncStorage.removeItem('userStatus');
       setDropdownVisible(false); // Close dropdown
     } catch (error) {
       console.error("Error clearing async storage", error);

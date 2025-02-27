@@ -34,7 +34,7 @@ export const phoneRegister = createAsyncThunk(
   'user/sendOtp',
   async ({ userPhoneNumber, navigation }, { rejectWithValue }) => {
     try {
-      const response = await fetch('', {
+      const response = await fetch('http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/sendOtp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userPhoneNumber }),
@@ -43,47 +43,54 @@ export const phoneRegister = createAsyncThunk(
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Phone registration failed');
 
-      // Debugging the API response
+      // Debugging API response
       console.log('Phone Registration API Response:', data);
-      alert('Phone Registration API Response: ' + JSON.stringify(data));
+
+      // 🔹 Store userPhoneNumber in AsyncStorage
+      await AsyncStorage.setItem('userPhoneNumber', userPhoneNumber);
 
       // Navigate after successful registration
-      navigation.navigate('VerifyOTP');  // Replace with your OTP verification screen
+      navigation.navigate('OtpScreen');
 
-      return { ...data, userPhoneNumber }; // Store phone number in the state
+      return { ...data, userPhoneNumber }; 
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
+
 // Async thunk for verifying OTP
 export const verifyOtp = createAsyncThunk(
   'user/validateOtp',
-  async ({ otp, navigation }, { getState, rejectWithValue }) => {
+  async ({ userOtp, navigation }, { rejectWithValue }) => {
     try {
-      const { userPhoneNumber } = getState().auth; // Retrieve phone number from state
-      if (!userPhoneNumber) throw new Error('Phone number not found');
+      const userMobileNumber = await AsyncStorage.getItem('userPhoneNumber');
+      console.log('Retrieved userPhoneNumber:', userMobileNumber);
+      if (!userMobileNumber) throw new Error('Phone number not found');
+      console.log('User OTP:', userOtp);
 
-      const response = await fetch('https://50.18.12.185:8443/YogaApp-0.0.1-SNAPSHOT/verifyOtp', {
+      const response = await fetch('http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/validateOtp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userPhoneNumber, otp }),
+        body: JSON.stringify({ userMobileNumber, userOtp }),
       });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'OTP verification failed');
 
-      // Debugging the API response
       console.log('OTP Verification API Response:', data);
-      alert('OTP Verification API Response: ' + JSON.stringify(data));
+      console.log('OTP Verification API Response: ' + JSON.stringify(data));
 
-      // Store JWT Token & Refresh Token in AsyncStorage after OTP verification
-      await AsyncStorage.setItem('jwtToken', data.jwtToken);
-      await AsyncStorage.setItem('refreshToken', data.refreshToken);
+      // Save the user information and tokens to AsyncStorage
+      await AsyncStorage.setItem('jwtToken', data.jwt);
+      await AsyncStorage.setItem('refreshToken', data.token);
+      await AsyncStorage.setItem('userPhoneNumber', data.username); // Storing username as phone number
+      await AsyncStorage.setItem('userId', data.id.toString()); // Storing user ID
+      await AsyncStorage.setItem('userStatus', JSON.stringify(data.userRegistered));
 
-      // Navigate after successful OTP verification
-      navigation.navigate('Dashboard');  // Replace 'Dashboard' with your target screen
+      // Navigate to the Register screen after successful login
+      navigation.navigate('Register');
 
       return data;
     } catch (error) {
@@ -92,12 +99,19 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
+
+
+
 // Async thunk for logging out
 export const logout = createAsyncThunk('auth/logout', async () => {
   await AsyncStorage.removeItem('jwtToken');
   await AsyncStorage.removeItem('refreshToken');
+  await AsyncStorage.removeItem('userPhoneNumber');  // 🔹 Clear stored phone number
+  await AsyncStorage.removeItem('userStatus');  
+
   return null;
 });
+
 
 const authSlice = createSlice({
   name: 'auth',
@@ -158,5 +172,6 @@ const authSlice = createSlice({
       });
   },
 });
+
 
 export default authSlice.reducer;
