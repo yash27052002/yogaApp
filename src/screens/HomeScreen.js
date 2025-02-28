@@ -3,6 +3,7 @@ import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Image, 
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+
 const { width, height } = Dimensions.get("window");
 
 const newsData = [

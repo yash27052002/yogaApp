@@ -3,6 +3,10 @@ import { View, TouchableOpacity, Text, StyleSheet, ScrollView, Image, useWindowD
 import Video from 'react-native-video';
 import Slider from '@react-native-community/slider';
 import Navbar from './Navbar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+
+
 
 const VideoPlayer = ({ navigation }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -18,6 +22,52 @@ const VideoPlayer = ({ navigation }) => {
   const [watchedTime, setWatchedTime] = useState(0);
   const [lastRecordedTime, setLastRecordedTime] = useState(0);
   const [skippedSections, setSkippedSections] = useState([]);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+
+useEffect(()=>{
+  const fetchVideo = async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('jwtToken');
+      if (!token) {
+        console.error('No JWT token found.');
+        return;
+      }
+
+      console.log('JWT Token:', token); // Log token
+
+      const response = await axios.get(
+        'http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/preferences/getPreferenceVideos?preferenceId=1',
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data =  response.data;
+      console.log('API Response:', JSON.stringify(data, null, 2));
+
+      if (data?.data?.data?.[0]?.fileData) {
+        setVideoUrl(data.data.data[0].fileData);
+        console.log('Video URL Set:', data.data.data[0].fileData); // Log video URL
+      } else {
+        console.error('Video URL not found in the API response');
+      }
+    } catch (error) {
+      console.error('Error fetching video data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchVideo();
+},[])
+
+
+  
 
   console.log("Total Watched Time:", watchedTime);
   useEffect(() => {
@@ -66,13 +116,14 @@ const VideoPlayer = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backIcon}>←</Text> {/* Unicode back arrow */}
           </TouchableOpacity>
+
         </View>
 
         {/* Video Wrapper */}
         <View style={[styles.videoWrapper, {height: isLandscape ? 500 : 200}]}>
           <Video
             ref={videoRef}
-            source={{ uri: 'https://www.w3schools.com/html/mov_bbb.mp4' }}
+            source={{ uri: videoUrl }}
             style={[styles.video, isFullScreen ? styles.fullScreenVideo : {}]} // Conditionally apply full-screen style
             resizeMode="cover"
             paused={!isPlaying}

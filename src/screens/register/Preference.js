@@ -90,48 +90,52 @@ const Preference = ({ theme = "light" }) => {
   const onSubmit = async () => {
     const userId = await AsyncStorage.getItem("userId"); 
     const jwt = await AsyncStorage.getItem("jwtToken"); 
-  
-    // Format selected preferences
+
+    // Ensure preferences are formatted correctly
     const preferencesFormatted = preferencesList
       .filter((preference) => selectedGods.includes(preference.preferencesName))
-      .map(({ preferencesId, preferencesName }) => ({ preferencesId, preferencesName }));
-  
-    // Dispatch Redux action
-    dispatch(setPreference(preferencesFormatted)); // Do NOT await here
-  
+      .map(({ preferencesId, preferencesName }) => ({
+        preferencesId,
+        preferencesName, // Ensure it's a string
+      }));
+
+    console.log("Formatted Preferences:", preferencesFormatted);
+
     const requestBody = {
-      userId: userId,
-      userName: name,
-      userAge: age,
-      userReligion: religion,
-      userTravelDestination: destination,
-      userTravelBoardingTime: boardingTime,
-      preferences: preferencesFormatted, // Use formatted preferences
+        userId: userId ? parseInt(userId, 10) : null,
+        userName: name,
+        userAge: age,
+        userReligion: religion,
+        userTravelDestination: destination,
+        userTravelBoardingTime: boardingTime.replace(/\u200E|\u200F/g, "").trim(),
+        preferences: preferencesFormatted, // Use correctly formatted preferences
     };
-  
-    console.log("Request Body:", requestBody);
-  
+
+    console.log("Final Request Body:", JSON.stringify(requestBody, null, 2));
+
     try {
-      const response = await fetch("http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/registerUser", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP Error! Status: ${response.status}, Message: ${errorText}`);
-      }
-  
-      const data = await response.json();
-      console.log("Response Data:", data);
+        const response = await fetch("http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/registerUser", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                Authorization: `Bearer ${jwt}`,
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP Error! Status: ${response.status}, Message: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log("Response Data:", data);
     } catch (error) {
-      console.error("Error submitting data:", error);
+        console.error("Error submitting data:", error);
     }
-  };
+};
+
   
   
   

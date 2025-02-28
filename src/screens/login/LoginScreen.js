@@ -9,12 +9,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Modal
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import Modal from 'react-native-modal';
 
 // Import SVG icons
 import Ellipse1 from "../../assets/Ellipse1.svg";
@@ -63,25 +63,34 @@ const Login = ({ theme = "light" }) => {
   ];
 
   const GoogleLogin = async () => {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
-    console.log('User Info:', userInfo);
-    console.log("user Email", userInfo.data.user.email);
-    console.log("Id Token", userInfo.data.idToken);
-    await AsyncStorage.setItem('Email', userInfo.data.user.email);
-    return userInfo;
-  };
-
-  const handleGoogleSignIn = async () => {
     try {
-      const response = await GoogleLogin();
-      const { email, idToken } = response.data.user;  // Access user info properly
-
-      dispatch(googleLogin({ email, idToken }));
-
-      if (response.data.user) navigation.navigate('Register');
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+  
+      console.log('User Info:', userInfo);
+      console.log('User Email:', userInfo.data.user.email);
+      console.log('ID Token:', userInfo.data.idToken);
+  
+      const email = userInfo.data.user.email;
+      const idToken = userInfo.data.idToken;
+  
+      // Store in AsyncStorage
+      await AsyncStorage.setItem('Email', email);
+      await AsyncStorage.setItem('IdToken', idToken);
+  
+      // Dispatch to Redux and API
+      dispatch(googleLogin({ userEmail:email, accessToken:idToken ,navigation }))
+      .unwrap()
+      .then((response) => {
+        alert("sso check successfully!.");
+      })
+      .catch((error) => {
+        alert("Failed to verify sso: " + error);
+        console.log("Failed to send OTP: " + error);
+      });
+  
     } catch (error) {
-      console.error('Login Error:', error);
+      console.error('Google Sign-In Error:', error);
     }
   };
 
@@ -197,7 +206,7 @@ const Login = ({ theme = "light" }) => {
                       width: isTablet && isLandscape ? 400 : "100%", // Fix width in landscape
                     }
                   ]}
-                  onPress={handleGoogleSignIn}
+                  onPress={GoogleLogin}
                 >
                   <GoogleIcon width={25} height={25} />
                   <Text style={styles.googleText}>Sign in with Google</Text>
@@ -209,31 +218,39 @@ const Login = ({ theme = "light" }) => {
       </KeyboardAvoidingView>
 
       {/* Country Code Modal */}
-      <Modal
-        isVisible={countryModalVisible}
-        onBackdropPress={() => setCountryModalVisible(false)}
-        style={styles.modal}
-      >
-        <View style={styles.modalContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search country"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <ScrollView style={styles.countryList}>
-            {filteredCountries.map((country) => (
-              <TouchableOpacity
-                key={country.code}
-                onPress={() => onSelectCountry(country)}
-                style={styles.countryItem}
-              >
-                <Text style={styles.countryText}>{country.name} ({country.code})</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </Modal>
+<Modal
+  visible={countryModalVisible}
+  transparent={true}
+  animationType="slide"
+  onRequestClose={() => setCountryModalVisible(false)}
+>
+  <TouchableOpacity 
+    style={styles.modalOverlay} 
+    activeOpacity={1} 
+    onPress={() => setCountryModalVisible(false)}
+  >
+    <View style={styles.modalContainer}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search country"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      <ScrollView style={styles.countryList}>
+        {filteredCountries.map((country) => (
+          <TouchableOpacity
+            key={country.code}
+            onPress={() => onSelectCountry(country)}
+            style={styles.countryItem}
+          >
+            <Text style={styles.countryText}>{country.name} ({country.code})</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  </TouchableOpacity>
+</Modal>
+
     </LinearGradient>
   );
 };
@@ -322,16 +339,21 @@ const styles = StyleSheet.create({
   svgItem: {
     marginBottom: 20,
   },
-  modal: {
-    justifyContent: "center",
-    alignItems: "center",
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  
   modalContainer: {
     backgroundColor: "#fff",
     borderRadius: 10,
     width: "80%",
     padding: 20,
+    maxHeight: "70%",
   },
+  
   searchInput: {
     height: 40,
     borderColor: '#ccc',
@@ -340,17 +362,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
   },
+  
   countryList: {
-    maxHeight: 300,
+    maxHeight: 250,
   },
+  
   countryItem: {
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#eee',
   },
+  
   countryText: {
     fontSize: 16,
+    color: "#333",
   },
+  
 });
 
 export default Login;

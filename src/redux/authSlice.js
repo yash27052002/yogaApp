@@ -4,30 +4,49 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Async thunk for Google login API
 export const googleLogin = createAsyncThunk(
   'auth/googleLogin',
-  async ({ email, idToken, navigation }, { rejectWithValue }) => {
+  async ({ userEmail, accessToken, navigation }, { rejectWithValue }) => {
     try {
-      const response = await fetch('https://9ecc4fee-d048-4e46-b001-e5b356e78e48.mock.pstmn.io/userRegister', {
+      const response = await fetch('http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/ssoCheck', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, idToken }),
+        body: JSON.stringify({ userEmail, accessToken }),
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Login failed');
+      // Log the full response before parsing JSON
+      const rawResponse = await response.text();
+      console.log('Raw API Response:', response);
 
-      // Debugging the API response
-      console.log('Google Login API Response:', data);
-      alert('Google Login API Response: ' + JSON.stringify(data));
+      // Try parsing JSON only if response is OK
+      if (!response.ok) {
+        throw new Error(rawResponse || 'Login failed');
+      }
+
+      const data = JSON.parse(rawResponse);
+      console.log('Parsed API Response:', data);
+      console.log('Parsed API Response:', data.jwt);
+      console.log('Parsed API Response:', data.userId);
+
+      await AsyncStorage.setItem('jwtToken', data.jwt);
+      await AsyncStorage.setItem('userId', data.userId.toString()); // Storing user ID
+      await AsyncStorage.setItem('userStatus', JSON.stringify(data.userRegistered));
+
+
+
+
+
+
 
       // Navigate after successful login
-      navigation.navigate('OtpScreen');  // Replace 'Home' with your target screen
+      navigation.navigate('Register');
 
       return data;
     } catch (error) {
+      console.error('API Error:', error);
       return rejectWithValue(error.message);
     }
   }
 );
+
 
 // Async thunk for phone number registration
 export const phoneRegister = createAsyncThunk(
