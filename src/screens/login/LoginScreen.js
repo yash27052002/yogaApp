@@ -91,6 +91,8 @@ const Login = ({ theme = "light" }) => {
   
     } catch (error) {
       console.error('Google Sign-In Error:', error);
+      navigation.navigate('Register');
+
     }
   };
 
