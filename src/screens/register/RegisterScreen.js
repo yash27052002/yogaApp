@@ -46,7 +46,6 @@ const RegisterScreen = ({ theme = "light" }) => {
     const { name, age } = getValues();
 
     // Dispatch to Redux
-    dispatch(setUserData({ name, age }));
 
     // Log the updated Redux state
     console.log("Updated Redux State:", userData);
@@ -70,19 +69,19 @@ const RegisterScreen = ({ theme = "light" }) => {
         style={{ flex: 1 }}
       >
 <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
+  contentContainerStyle={[styles.scrollContainer]} 
   keyboardShouldPersistTaps="handled"
 >
           <View style={styles.container}>
-            <View style={styles.svgContainer}>
-              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
-              <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
-              <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
-              <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
-              <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
+          <View style={styles.svgContainer}>
+              <Ellipse1 width={7} height={7} style={styles.svgItem} />
+              <Ellipse2 width={15} height={14} style={styles.svgItem} />
+              <Ellipse3 width={22} height={22} style={styles.svgItem} />
+              <Ellipse4 width={30} height={29} />
+              <LotusYoga width={100} height={171} style={styles.lotusIcon} />
             </View>
 
-            <View style={[styles.formContainer ,{ width: isTablet ? 400 : "100%" }]}>
+            <View style={[styles.formContainer ]}>
               {/* Name Input */}
               <View style={styles.inputWrapper}>
                 <Text style={styles.label}>Name</Text>
@@ -102,7 +101,7 @@ const RegisterScreen = ({ theme = "light" }) => {
               </View>
 
               {/* Age Input */}
-              <View style={[styles.inputWrapper , { width: isTablet ? 400 : "100%" }]}>
+              <View style={[styles.inputWrapper ]}>
                 <Text style={styles.label}>Age</Text>
                 <Controller
                   control={control}
@@ -122,7 +121,7 @@ const RegisterScreen = ({ theme = "light" }) => {
 
               <View style={styles.buttonRow}>
                 <TouchableOpacity
-                  style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground ,width: isTablet && isLandscape ? 400 : "100%"}]}
+                  style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
                   onPress={handleSubmit(handleContinue)}
                 >
                   <Text style={[styles.buttonText]}>Continue</Text>
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
   container: {
     width: "90%",
     alignItems: "center",
-    gap: 40,
+    gap: 20,
     paddingTop: 20,
   },
   svgContainer: {
@@ -167,11 +166,11 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     alignItems: "center",
-    width: "100%",
+    width: width * 0.6,
     marginTop: -10,
   },
   inputWrapper: {
-    width: "100%",
+    width: width * 0.6,
     marginBottom: 15,
   },
   label: {
@@ -199,7 +198,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    width: "100%",
+    width: width * 0.6,
     padding: 12,
     borderRadius: 25,
     alignItems: "center",

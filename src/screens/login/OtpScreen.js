@@ -13,7 +13,7 @@ import { useDispatch } from "react-redux";
 import { verifyOtp } from '../../redux/authSlice.js'; // Rename to avoid conflict with function name
 import axios from 'axios';
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const OtpScreen = ({ theme = "light" }) => {
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
@@ -52,17 +52,9 @@ const OtpScreen = ({ theme = "light" }) => {
       alert("Please enter a valid 4-digit OTP.");
       return;
     }
-    
-    // Dispatch Redux action
-    dispatch(verifyOtp({ userOtp: otpValue, navigation }))
-    .unwrap()
-      .then((response) => {
-        alert("OTP verified successfully! Please check your phone.");
-      })
-      .catch((error) => {
-        alert("Failed to verify OTP: " + error);
-        console.log("Failed to verify OTP: " + error)
-      });
+    navigation.navigate('Register');
+
+
   };
 
   return (
@@ -81,11 +73,11 @@ const OtpScreen = ({ theme = "light" }) => {
           <View style={[styles.mainContainer, { paddingHorizontal: isTablet ? 30 : 15 }]}>
             {/* SVG items */}
             <View style={styles.svgContainer}>
-              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
-              <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
-              <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
-              <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} style={styles.svgItem} />
-              <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
+              <Ellipse1 width={7} height={7} style={styles.svgItem} />
+              <Ellipse2 width={15} height={14} style={styles.svgItem} />
+              <Ellipse3 width={22} height={22} style={styles.svgItem} />
+              <Ellipse4 width={30} height={29} />
+              <LotusYoga width={100} height={171} style={styles.lotusIcon} />
             </View>
 
             {/* OTP Frame */}
@@ -135,9 +127,6 @@ const styles = StyleSheet.create({
   login: {
     flex: 1,
     width: "100%",
-    height: "100%",
-    justifyContent: "center",  // Center content vertically
-    alignItems: "center",  // Center content horizontally
   },
   scrollContainer: {
     flexGrow: 1,
@@ -146,7 +135,7 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
   },
   mainContainer: {
-    width: "90%",
+    width: width * 1,
     alignItems: "center",
     gap: 40,
     paddingTop: 20,
@@ -161,7 +150,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   lotusIcon: {
-    marginTop: -40,
+    marginTop: -20,
   },
   otpFrameContainer: {
     alignItems: "center",

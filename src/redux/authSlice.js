@@ -127,6 +127,8 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   await AsyncStorage.removeItem('refreshToken');
   await AsyncStorage.removeItem('userPhoneNumber');  // 🔹 Clear stored phone number
   await AsyncStorage.removeItem('userStatus');  
+  await AsyncStorage.removeItem('randomCode');  
+
 
   return null;
 });

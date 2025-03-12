@@ -32,8 +32,8 @@ const App = () => {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const userStatus = await AsyncStorage.getItem('userStatus');
-        if (userStatus == 'true') {
+        const userStatus = await AsyncStorage.getItem('randomCode');
+        if (userStatus) {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
@@ -129,7 +129,6 @@ const CoachesWrapper = ({ navigation, route }) => (
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    marginTop: Platform.OS === 'ios' ? 0 : 20,
     backgroundColor: '#f5f5f5',
   },
   tabBar: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   useWindowDimensions,
+  Modal,
+  FlatList,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
-import { Picker } from "@react-native-picker/picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ellipse1 from "../../assets/Ellipse1.svg";
 import Ellipse2 from "../../assets/Ellipse2.svg";
 import Ellipse3 from "../../assets/Ellipse3.svg";
@@ -30,65 +30,44 @@ const Religion = ({ theme = "light" }) => {
   const navigation = useNavigation();
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 768;
-  const isLandscape = width > height; 
+  const isLandscape = width > height;
 
   const { control, handleSubmit, setValue, getValues } = useForm();
   const dispatch = useDispatch();
 
   const [selectedReligion, setSelectedReligion] = useState("Select Religion");
-  const [showPicker, setShowPicker] = useState(false);
-  const [religions, setReligions] = useState([]); 
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Fetch religions from API
-  useEffect(() => {
-    const fetchReligions = async () => {
-      try {
-        const jwtToken = await AsyncStorage.getItem("jwtToken");
-        if (!jwtToken) throw new Error("JWT token not found");
-
-        const response = await fetch(
-          "http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/religion/getAllReligion",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${jwtToken}`,
-            },
-          }
-        );
-
-        const result = await response.json();
-        if (result.status === -1 && Array.isArray(result.data)) {
-          setReligions(result.data.map((item) => item.religionName)); 
-        } else {
-          console.error("Unexpected API response:", result);
-        }
-      } catch (error) {
-        console.error("Error fetching religions:", error);
-      }
-    };
-
-    fetchReligions();
-  }, []);
+  // Hardcoded list of religions
+  const religions = [
+    "Hinduism",
+    "Islam",
+    "Christianity",
+    "Buddhism",
+    "Sikhism",
+    "Jainism",
+    "Zoroastrianism",
+    "Judaism",
+    "Atheism",
+    "Other",
+  ];
 
   // Function to handle selection
   const handleSelectReligion = (religion) => {
     setSelectedReligion(religion);
-    setShowPicker(false);
-    setValue("religion", religion); 
+    setModalVisible(false);
+    setValue("religion", religion);
   };
 
   const religionData = useSelector((state) => state.user);
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     const { religion } = getValues();
-
     if (religion && religion !== "Select Religion") {
-      dispatch(setReligion(religion)); 
+      dispatch(setReligion(religion));
     }
-
-    console.log("Updated Religion:", religionData); 
-    navigation.navigate("Destination"); 
+    console.log("Updated Religion:", religionData);
+    navigation.navigate("Destination");
   };
 
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
@@ -105,52 +84,66 @@ const Religion = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView 
-          contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
+        <ScrollView
+          contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
-            <View style={styles.svgContainer}>
-              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
-              <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
-              <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
-              <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
-              <LotusYoga width={isTablet ? 150 : 100} height={isTablet ? 250 : 171} style={styles.lotusIcon} />
+          <View style={styles.svgContainer}>
+              <Ellipse1 width={7} height={7} style={styles.svgItem} />
+              <Ellipse2 width={15} height={14} style={styles.svgItem} />
+              <Ellipse3 width={22} height={22} style={styles.svgItem} />
+              <Ellipse4 width={30} height={29} />
+              <LotusYoga width={100} height={171} style={styles.lotusIcon} />
             </View>
 
             <View style={[styles.inputContainer, { width: isTablet ? 400 : "100%" }]}>
               <TouchableOpacity
-                onPress={() => setShowPicker(!showPicker)} 
+                onPress={() => setModalVisible(true)}
                 style={styles.pickerContainer}
               >
                 <Text style={styles.pickerText}>{selectedReligion}</Text>
               </TouchableOpacity>
-
-              {showPicker && (
-                <View style={styles.pickerWrapper}>
-                  <Picker
-                    selectedValue={selectedReligion}
-                    onValueChange={(itemValue) => handleSelectReligion(itemValue)}
-                    style={styles.picker}
-                  >
-                    <Picker.Item label="Select Religion" value="Select Religion" />
-                    {religions.map((religion, index) => (
-                      <Picker.Item key={index} label={religion} value={religion} />
-                    ))}
-                  </Picker>
-                </View>
-              )}
             </View>
 
             <TouchableOpacity
               style={[styles.button, { backgroundColor: currentTheme.buttonBackground, width: isTablet ? 400 : "100%" }]}
               onPress={handleContinue}
             >
-              <Text style={[styles.buttonText]}>Continue</Text>
+              <Text style={styles.buttonText}>Continue</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Modal for Religion Selection */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Select Religion</Text>
+            <FlatList
+              data={religions}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => handleSelectReligion(item)}
+                >
+                  <Text style={styles.modalItemText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 };
@@ -196,31 +189,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
     backgroundColor: "#fff",
-    position: "relative",
   },
   pickerContainer: {
     width: "100%",
     height: 40,
     justifyContent: "center",
     alignItems: "center",
-    paddingLeft: 10,
   },
   pickerText: {
-    color: "#000",
-  },
-  pickerWrapper: {
-    position: "absolute",
-    top: 50, 
-    left: 10,
-    right: 0,
-    backgroundColor: "#fff",
-    zIndex: 10,
-    paddingHorizontal: 10,
-  },
-  picker: {
-    width: "100%",
-    height: 150, 
-    backgroundColor: "#fff",
     color: "#000",
   },
   button: {
@@ -233,6 +209,46 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
     textAlign: "center",
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    width: width * 0.4,
+    height: height * 0.5,
+
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalItem: {
+    padding: 12,
+    width: "100%",
+    alignItems: "center",
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: "#000",
+  },
+  closeButton: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: "#d32f2f",
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
 

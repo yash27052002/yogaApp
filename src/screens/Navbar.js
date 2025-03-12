@@ -43,6 +43,8 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userStatus');
+      await AsyncStorage.removeItem('randomCode');  
+
       setDropdownVisible(false); // Close dropdown
     } catch (error) {
       console.error("Error clearing async storage", error);
@@ -146,8 +148,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f1f1f1",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: -1,
+    paddingHorizontal: 20,
     borderRadius: 20,
     flex: 1,
     justifyContent: 'center',
@@ -157,6 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#666",
+    lineHeight: 20,
   },
   searchIconContainer: {
     marginLeft: 10,

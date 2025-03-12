@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useDispatch } from "react-redux";
@@ -16,43 +16,22 @@ import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 const { width } = Dimensions.get("window");
 import { useSelector } from 'react-redux';
 
-
 const Preference = ({ theme = "light" }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [selectedGods, setSelectedGods] = useState([]);
-  const [preferencesList, setPreferencesList] = useState([]); // Store preferences list
-  const [loading, setLoading] = useState(true); // Loading state
-
-  // Fetch preferences list from the API
-  useEffect(() => {
-    const fetchPreferences = async () => {
-      try {
-        const jwt = await AsyncStorage.getItem("jwtToken");
-        console.log(jwt)
-        const response = await fetch("http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/preferences/getAllPreference", {
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-          },
-        });
-    
-        const jsonData = await response.json(); // Directly parse JSON
-        console.log("Parsed Data:", jsonData); // Check if the 'data' field is an array
-        if (Array.isArray(jsonData.data)) {
-          setPreferencesList(jsonData.data);
-        } else {
-          console.log("Received data is not an array:", jsonData);
-        }
-      } catch (error) {
-        console.error("Error fetching preferences:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-  
-    fetchPreferences();
-  }, []);
+  const [preferencesList, setPreferencesList] = useState([
+    { preferencesId: 1, preferencesName: "Vishnu" },
+    { preferencesId: 2, preferencesName: "Shiva" },
+    { preferencesId: 3, preferencesName: "Brahma" },
+    { preferencesId: 4, preferencesName: "Lakshmi" },
+    { preferencesId: 5, preferencesName: "Saraswati" },
+    { preferencesId: 6, preferencesName: "Durga" },
+    { preferencesId: 7, preferencesName: "Ganesha" },
+    { preferencesId: 8, preferencesName: "Krishna" },
+    { preferencesId: 9, preferencesName: "Hanuman" },
+  ]); // Manually added preferences list
+  const [loading, setLoading] = useState(false); // Loading state removed as we no longer fetch data
 
   // Get user data from Redux store
   const { name, age, religion, destination, boardingTime, preferences } = useSelector((state) => state.user);
@@ -74,7 +53,6 @@ const Preference = ({ theme = "light" }) => {
       return updatedSelectedGods;
     });
   };
-  
 
   const storeRandomCode = async () => {
     const randomCode = Math.random().toString(36).substring(7);
@@ -88,61 +66,8 @@ const Preference = ({ theme = "light" }) => {
 
   // Submit form and update Redux store
   const onSubmit = async () => {
-    const userId = await AsyncStorage.getItem("userId"); 
-    const jwt = await AsyncStorage.getItem("jwtToken"); 
-
-    // Ensure preferences are formatted correctly
-    const preferencesFormatted = preferencesList
-      .filter((preference) => selectedGods.includes(preference.preferencesName))
-      .map(({ preferencesId, preferencesName }) => ({
-        preferencesId,
-        preferencesName, // Ensure it's a string
-      }));
-
-    console.log("Formatted Preferences:", preferencesFormatted);
-
-    const requestBody = {
-        userId: userId ? parseInt(userId, 10) : null,
-        userName: name,
-        userAge: age,
-        userReligion: religion,
-        userTravelDestination: destination,
-        userTravelBoardingTime: boardingTime.replace(/\u200E|\u200F/g, "").trim(),
-        preferences: preferencesFormatted, // Use correctly formatted preferences
-    };
-
-    console.log("Final Request Body:", JSON.stringify(requestBody, null, 2));
-
-    try {
-        const response = await fetch("http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/registerUser", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                Authorization: `Bearer ${jwt}`,
-            },
-            body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP Error! Status: ${response.status}, Message: ${errorText}`);
-        }
-
-        const data = await response.json();
-        console.log("Response Data:", data);
-    } catch (error) {
-        console.error("Error submitting data:", error);
-    }
+    storeRandomCode()
 };
-
-  
-  
-  
-
-  if (loading) {
-    return <Text>Loading preferences...</Text>; // Show loading message while fetching data
-  }
 
   return (
     <LinearGradient style={styles.login} locations={[0, 1]} colors={["#dacaff", "#f4ffe1"]} useAngle={true} angle={180}>
@@ -240,12 +165,12 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   button: {
-    width: "100%",
-    padding: 12,
+    width: width * 0.5,
+        padding: 12,
     borderRadius: 25,
     alignItems: "center",
     backgroundColor: "#6a4cff",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   buttonText: {
     color: "#fff",

@@ -9,7 +9,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Modal
+  Modal,
+  Dimensions,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useForm, Controller } from "react-hook-form";
@@ -30,6 +31,8 @@ import { useDispatch } from 'react-redux';
 import { googleLogin, phoneRegister } from '../../redux/authSlice.js'; // Import your action
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+const { width } = Dimensions.get("window");
+
 
 // Google SignIn setup
 GoogleSignin.configure({
@@ -42,18 +45,18 @@ GoogleSignin.configure({
 
 const Login = ({ theme = "light" }) => {
   const { width, height } = useWindowDimensions();
-  const isTablet = width >= 768;
-  const isLandscape = width > height;
+  
+  const isTablet = width >= 768;  // Check for tablet
+  const isLandscape = width > height;  // Check for landscape mode
   const { control, handleSubmit } = useForm();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
-  const [countryCode, setCountryCode] = useState('+1'); // Default country code is '+1'
+  const [countryCode, setCountryCode] = useState('+1');
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // List of countries (for demonstration purposes)
+
   const countryList = [
     { code: '+1', name: 'United States' },
     { code: '+44', name: 'United Kingdom' },
@@ -62,62 +65,37 @@ const Login = ({ theme = "light" }) => {
     // Add more countries here
   ];
 
+  // Google Login function
   const GoogleLogin = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-  
       console.log('User Info:', userInfo);
       console.log('User Email:', userInfo.data.user.email);
       console.log('ID Token:', userInfo.data.idToken);
-  
       const email = userInfo.data.user.email;
       const idToken = userInfo.data.idToken;
-  
+
       // Store in AsyncStorage
       await AsyncStorage.setItem('Email', email);
       await AsyncStorage.setItem('IdToken', idToken);
-  
-      // Dispatch to Redux and API
-      dispatch(googleLogin({ userEmail:email, accessToken:idToken ,navigation }))
-      .unwrap()
-      .then((response) => {
-        alert("sso check successfully!.");
-      })
-      .catch((error) => {
-        alert("Failed to verify sso: " + error);
-        console.log("Failed to send OTP: " + error);
-      });
-  
     } catch (error) {
-      console.error('Google Sign-In Error:', error);
       navigation.navigate('Register');
-
     }
   };
 
+  // Phone Number Handler
   const handlePhoneNumber = (data) => {
-    // Concatenate country code and phone number
-    const userPhoneNumber = `${countryCode}${data.username}`.replace(/\s/g, ''); // Remove any spaces
+    const userPhoneNumber = `${countryCode}${data.username}`.replace(/\s/g, ''); 
     console.log(userPhoneNumber);
     
     if (!userPhoneNumber) {
       alert("Please enter a valid phone number");
       return;
     }
-  
-    // Dispatch to Redux for phone number registration
-    dispatch(phoneRegister({ userPhoneNumber, navigation }))
-      .unwrap()
-      .then((response) => {
-        alert("OTP sent successfully! Please check your phone.");
-      })
-      .catch((error) => {
-        alert("Failed to send OTP: " + error);
-        console.log("Failed to send OTP: " + error);
-      });
+
+    navigation.navigate('OtpScreen');
   };
-  
 
   const onSelectCountry = (country) => {
     setCountryCode(country.code);
@@ -143,16 +121,17 @@ const Login = ({ theme = "light" }) => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={[styles.scrollContainer]} keyboardShouldPersistTaps="handled">
-          <View style={styles.container}>
-
+<ScrollView 
+  contentContainerStyle={[styles.scrollContainer]} 
+  keyboardShouldPersistTaps="handled"
+>          <View style={styles.container}>
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
-              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
-              <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
-              <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
-              <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
-              <LotusYoga width={isTablet ? 200 : 120} height={isTablet ? 300 : 180} style={styles.lotusIcon} />
+              <Ellipse1 width={7} height={7} style={styles.svgItem} />
+              <Ellipse2 width={15} height={14} style={styles.svgItem} />
+              <Ellipse3 width={22} height={22} style={styles.svgItem} />
+              <Ellipse4 width={30} height={29} />
+              <LotusYoga width={100} height={171} style={styles.lotusIcon} />
             </View>
 
             {/* Login Form */}
@@ -161,7 +140,7 @@ const Login = ({ theme = "light" }) => {
                 Login with your Phone Number
               </Text>
 
-              <View style={[styles.inputContainer, { width: isTablet ? 400 : "100%" }]}>
+              <View style={[styles.inputContainer]}>
                 {/* Country Code Modal */}
                 <TouchableOpacity onPress={() => setCountryModalVisible(true)}>
                   <Text style={styles.countryCodeText}>{countryCode}</Text>
@@ -170,7 +149,7 @@ const Login = ({ theme = "light" }) => {
                 {/* Phone number input */}
                 <Controller
                   control={control}
-                  name="username"
+                  name="PhoneNumber"
                   render={({ field: { onChange, value } }) => (
                     <TextInput
                       style={styles.input}
@@ -205,7 +184,7 @@ const Login = ({ theme = "light" }) => {
                     styles.googleButton,
                     {
                       backgroundColor: currentTheme.googleButtonBackground,
-                      width: isTablet && isLandscape ? 400 : "100%", // Fix width in landscape
+                      
                     }
                   ]}
                   onPress={GoogleLogin}
@@ -220,39 +199,38 @@ const Login = ({ theme = "light" }) => {
       </KeyboardAvoidingView>
 
       {/* Country Code Modal */}
-<Modal
-  visible={countryModalVisible}
-  transparent={true}
-  animationType="slide"
-  onRequestClose={() => setCountryModalVisible(false)}
->
-  <TouchableOpacity 
-    style={styles.modalOverlay} 
-    activeOpacity={1} 
-    onPress={() => setCountryModalVisible(false)}
-  >
-    <View style={styles.modalContainer}>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search country"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
-      <ScrollView style={styles.countryList}>
-        {filteredCountries.map((country) => (
-          <TouchableOpacity
-            key={country.code}
-            onPress={() => onSelectCountry(country)}
-            style={styles.countryItem}
-          >
-            <Text style={styles.countryText}>{country.name} ({country.code})</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  </TouchableOpacity>
-</Modal>
-
+      <Modal
+        visible={countryModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setCountryModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setCountryModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search country"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <ScrollView style={styles.countryList}>
+              {filteredCountries.map((country) => (
+                <TouchableOpacity
+                  key={country.code}
+                  onPress={() => onSelectCountry(country)}
+                  style={styles.countryItem}
+                >
+                  <Text style={styles.countryText}>{country.name} ({country.code})</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </LinearGradient>
   );
 };
@@ -265,13 +243,13 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "flex-start",
+    justifyContent: "center",
     alignItems: "center",
     paddingBottom: 50,
-    marginTop: 30,
+    marginTop:-20
   },
   container: {
-    width: "90%",
+    width: width * 0.9,
     alignItems: "center",
     gap: 40,
     paddingTop: 20,
@@ -280,7 +258,10 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: -10,
+    marginBottom: -30,
+  },
+  svgItem: {
+    marginBottom: 20,
   },
   lotusIcon: {
     marginTop: -20,
@@ -295,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   inputContainer: {
-    width: "100%",
+    width: width * 0.6,
     height: 50,
     borderWidth: 1,
     borderColor: "#000",
@@ -321,7 +302,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    width: "100%",
+    width: width * 0.6,
     padding: 12,
     borderRadius: 25,
     alignItems: "center",
@@ -338,9 +319,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#fff',
   },
-  svgItem: {
-    marginBottom: 20,
-  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
