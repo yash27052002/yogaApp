@@ -36,8 +36,11 @@ const { width } = Dimensions.get("window");
 
 // Google SignIn setup
 GoogleSignin.configure({
-  webClientId: '105883230649-ki5jdvrgsp9tiht5mkdo9g9ui2pbo9t9.apps.googleusercontent.com',
-
+  webClientId: '968763437649-9cq1vtnj2ssag10u0hke0mgmjaqn5i4q.apps.googleusercontent.com',
+  iosClientId: '968763437649-47ue230k96ni2d5shup0d4h213vd6s45.apps.googleusercontent.com',
+  scopes: ['profile', 'email'],
+  offlineAccess: true,
+  forceCodeForRefreshToken: true,
 });
 
 const Login = ({ theme = "light" }) => {
@@ -67,17 +70,33 @@ const Login = ({ theme = "light" }) => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
+  
       console.log('User Info:', userInfo);
       console.log('User Email:', userInfo.data.user.email);
       console.log('ID Token:', userInfo.data.idToken);
+  
       const email = userInfo.data.user.email;
       const idToken = userInfo.data.idToken;
-
+  
       // Store in AsyncStorage
       await AsyncStorage.setItem('Email', email);
       await AsyncStorage.setItem('IdToken', idToken);
+  
+      // Dispatch to Redux and API
+      dispatch(googleLogin({ userEmail:email, accessToken:idToken ,navigation }))
+      .unwrap()
+      .then((response) => {
+        alert("sso check successfully!.");
+      })
+      .catch((error) => {
+        alert("Failed to verify sso: " + error);
+        console.log("Failed to send OTP: " + error);
+      });
+  
     } catch (error) {
-      console.error("error while google login", error)
+      console.error('Google Sign-In Error:', error);
+      navigation.navigate('Register');
+
     }
   };
 

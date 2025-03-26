@@ -34,8 +34,8 @@ const App = () => {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const userStatus = await AsyncStorage.getItem('randomCode');
-        if (userStatus) {
+        const userStatus = await AsyncStorage.getItem('userStatus');
+        if (userStatus == 'true') {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
