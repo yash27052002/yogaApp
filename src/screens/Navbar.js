@@ -58,7 +58,10 @@ const Navbar = () => {
   return (
     <View style={styles.header}>
       {/* Lotus Icon - Left */}
+      <TouchableOpacity onPress={()=>navigation.navigate('Home')}>
       <LotusYoga height={40} width={40} />
+
+      </TouchableOpacity>
 
       {/* Search Bar (visible on tablet or toggled on mobile) */}
       {(isTablet || searchBarVisible) && (

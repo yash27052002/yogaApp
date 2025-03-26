@@ -17,12 +17,12 @@ const Coaches = () => {
     ];
 
     const handleCoachPress = (coach) => {
-        navigation.navigate('CoachDetails', { coach }); // Navigate to CoachDetails and pass the selected coach
+        navigation.navigate('CoachesDetails', { coach }); // Navigate to CoachDetails and pass the selected coach
     };
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContainer}>
 
                 {/* Scrollable image at the top */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageScroll}>
@@ -75,11 +75,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
     },
     scrollContainer: {
-        flexGrow: 1,
+        minHeight: height,
+        paddingBottom: 80, // Adds space at the bottom
     },
     imageScroll: {
         width: '100%',
-        height: 200, // Adjust height as needed
+        height: 500, // Adjust height as needed
         marginTop: 20,
     },
     bannerImage: {
@@ -104,45 +105,46 @@ const styles = StyleSheet.create({
     },
     card: {
         borderRadius: 10,
-        padding: 10,
-        marginRight: 15,
+        padding: 8,  // Reduced padding
+        marginRight: 8, // Reduced margin between cards
         alignItems: 'center',
         justifyContent: 'center',
-        width: width * 0.3,  // Set card width to 30% of screen width
+        width: width * 0.20,  // Reduced card width from 30% to 25% of screen width
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 2 },  // Reduced shadow for a cleaner look
         shadowOpacity: 0.1,
-        shadowRadius: 5,
+        shadowRadius: 3,
     },
     profileImage: {
-        width: width * 0.2,  // Image width is 20% of screen width
-        height: width * 0.2, // Image height is 20% of screen width
-        borderRadius: width * 0.1,  // Makes the image round (half the width/height)
-        marginBottom: 10,
+        width: width * 0.15,  // Reduced image size to 15% of screen width
+        height: width * 0.15, 
+        borderRadius: width * 0.075,  // Half of the image width for rounded shape
+        marginBottom: 8,
     },
     coachName: {
-        fontSize: 14,
+        fontSize: 12,  // Reduced font size
         fontWeight: '600',
         color: '#333',
     },
     button: {
         backgroundColor: '#675987',
-        paddingVertical: 5,
-        paddingHorizontal: 20,
-        borderRadius: 19,
+        paddingVertical: 4,  // Reduced button height
+        paddingHorizontal: 16,  // Reduced button width
+        borderRadius: 15, // Smaller radius
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 20,
+        marginTop: 15,  // Reduced margin-top
     },
     buttonText: {
         color: '#fff',
-        fontSize: 12,
+        fontSize: 10,  // Reduced font size
         fontWeight: 'bold',
     },
     newSection: {
-        marginTop: 30,  // Adds space before the new section
+        marginTop: 25,  // Reduced space before new section
         paddingHorizontal: 10,
     }
 });
+
 
 export default Coaches;

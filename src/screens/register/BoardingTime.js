@@ -57,13 +57,14 @@ const BoardingTime = ({ theme = "light" }) => {
   // Function to handle time change
   const handleTimeChange = (event, selectedDate) => {
     if (selectedDate) {
-      setSelectedTime(selectedDate); // Set selected time immediately
-      setIsTimeSelected(true); // Mark that user selected a time
+      // Ensure that the date object is updated with the selected time
+      setSelectedTime(selectedDate);  // This will update the selected time
 
-      setShowTimePicker(true); // Close picker immediately
-      setShowConfirmButton(true); // Show confirm button if needed
+      setShowTimePicker(false);  // Close the time picker
+      setIsTimeSelected(true);   // Mark that a time was selected
     }
   };
+  
   
 
   const handleConfirmTime = () => {
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     marginTop: -20,
   },
   inputContainer: {
-    width: width * 0.4,
+    width: width * 0.7,
     height: 50,
     borderWidth: 1,
     borderColor: "#fff",
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 25,
     paddingVertical: 10,
-    width: width * 0.4,
+    width: width * 0.7,
     alignItems: "center",
   },
   confirmButtonText: {
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   button: {
-    width: width * 0.4,
+    width: width * 0.7,
     padding: 12,
     borderRadius: 25,
     alignItems: "center",

@@ -166,11 +166,11 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     alignItems: "center",
-    width: width * 0.6,
+    width: width * 0.4,
     marginTop: -10,
   },
   inputWrapper: {
-    width: width * 0.6,
+    width: width * 0.7,
     marginBottom: 15,
   },
   label: {
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    width: width * 0.6,
+    width: width * 0.7,
     padding: 12,
     borderRadius: 25,
     alignItems: "center",

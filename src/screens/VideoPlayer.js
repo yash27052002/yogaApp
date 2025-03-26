@@ -1,10 +1,12 @@
 import React, { useState, useRef , useEffect} from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, ScrollView, Image, useWindowDimensions } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, ScrollView, Image, useWindowDimensions, Dimensions } from 'react-native';
 import Video from 'react-native-video';
 import Slider from '@react-native-community/slider';
 import Navbar from './Navbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+
+const { width, height } = Dimensions.get("window");
 
 
 
@@ -22,49 +24,10 @@ const VideoPlayer = ({ navigation }) => {
   const [watchedTime, setWatchedTime] = useState(0);
   const [lastRecordedTime, setLastRecordedTime] = useState(0);
   const [skippedSections, setSkippedSections] = useState([]);
-  const [videoUrl, setVideoUrl] = useState(null);
+  const videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4";
   const [loading, setLoading] = useState(false);
 
 
-useEffect(()=>{
-  const fetchVideo = async () => {
-    setLoading(true);
-    try {
-      const token = await AsyncStorage.getItem('jwtToken');
-      if (!token) {
-        console.error('No JWT token found.');
-        return;
-      }
-
-      console.log('JWT Token:', token); // Log token
-
-      const response = await axios.get(
-        'http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/preferences/getPreferenceVideos?preferenceId=1',
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data =  response.data;
-      console.log('API Response:', JSON.stringify(data, null, 2));
-
-      if (data?.data?.data?.[0]?.fileData) {
-        setVideoUrl(data.data.data[0].fileData);
-        console.log('Video URL Set:', data.data.data[0].fileData); // Log video URL
-      } else {
-        console.error('Video URL not found in the API response');
-      }
-    } catch (error) {
-      console.error('Error fetching video data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchVideo();
-},[])
 
 
   
@@ -120,19 +83,20 @@ useEffect(()=>{
         </View>
 
         {/* Video Wrapper */}
-        <View style={[styles.videoWrapper, {height: isLandscape ? 500 : 200}]}>
+        <View
+          style={[
+            styles.videoWrapper,
+            { width: width * 0.9, height: isLandscape ? height * 0.7 : height * 0.3 }, // Responsive size
+          ]}
+        >
           <Video
-            ref={videoRef}
             source={{ uri: videoUrl }}
-            style={[styles.video, isFullScreen ? styles.fullScreenVideo : {}]} // Conditionally apply full-screen style
+            style={{
+              width: "100%", // Make video width match the wrapper
+              height: "100%", // Make video height match the wrapper
+            }}
             resizeMode="cover"
-            paused={!isPlaying}
-            onEnd={() => setIsPlaying(false)}
             controls
-            onSeek={(event) => handleSeek(event.nativeEvent)}  // Pass only nativeEvent
-            onProgress={handleProgress}
-            onLoad={handleLoad}
-            muted={isMuted}
           />
         </View>
 
@@ -230,10 +194,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     marginTop: 40,
+    marginLeft:30,
   },
   video: {
-    width: '100%',
-    height: '100%',
+    width: width * 0.9,
+    height: height * 0.4,
   },
   fullScreenVideo: {
     width: '100%',
@@ -318,7 +283,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     gap: 17,
-    alignItems: "center"
+    alignItems: "center",
+    margin:20,
   },
   
   cardView: {

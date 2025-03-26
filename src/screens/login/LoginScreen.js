@@ -36,11 +36,8 @@ const { width } = Dimensions.get("window");
 
 // Google SignIn setup
 GoogleSignin.configure({
-  webClientId: '968763437649-9cq1vtnj2ssag10u0hke0mgmjaqn5i4q.apps.googleusercontent.com',
-  iosClientId: '968763437649-47ue230k96ni2d5shup0d4h213vd6s45.apps.googleusercontent.com',
-  scopes: ['profile', 'email'],
-  offlineAccess: true,
-  forceCodeForRefreshToken: true,
+  webClientId: '105883230649-ki5jdvrgsp9tiht5mkdo9g9ui2pbo9t9.apps.googleusercontent.com',
+
 });
 
 const Login = ({ theme = "light" }) => {
@@ -80,7 +77,7 @@ const Login = ({ theme = "light" }) => {
       await AsyncStorage.setItem('Email', email);
       await AsyncStorage.setItem('IdToken', idToken);
     } catch (error) {
-      navigation.navigate('Register');
+      console.error("error while google login", error)
     }
   };
 
@@ -276,7 +273,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   inputContainer: {
-    width: width * 0.6,
+    width: width * 0.7,
     height: 50,
     borderWidth: 1,
     borderColor: "#000",
@@ -302,7 +299,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    width: width * 0.6,
+    width: width * 0.7,
     padding: 12,
     borderRadius: 25,
     alignItems: "center",

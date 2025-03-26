@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   scrollViewContent: {
-    paddingBottom: 30,
+    paddingBottom: 900,
   },
   welcomeSection: {
     marginTop: 20,
@@ -386,9 +386,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    height:"50%"
   },
   exploreCard: {
-    width: "48%",
+    width: "40%",
     padding: 10,
     backgroundColor: "#fafafa",
     marginBottom: 20,
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: "100%",
-    height: 120,
+    height: "100%",
     resizeMode: "cover",
     borderRadius: 8,
   },

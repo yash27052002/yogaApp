@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, StyleSheet, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Dimensions, TouchableOpacity, Platform, Image, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider } from 'react-redux';
@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MainLayout from './screens/MainLayout';
 import VideoPlayer from './screens/VideoPlayer';
 import Settings from './screens/Settings';
+import CoachesDetails from './screens/CoachesDetails';
 
 const Tab = createBottomTabNavigator();
 const { width, height } = Dimensions.get('window');
@@ -28,6 +29,7 @@ const { width, height } = Dimensions.get('window');
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const Stack = createNativeStackNavigator();
+  const isLandscape = width > height;  // Check for landscape mode
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -61,7 +63,7 @@ const App = () => {
                 <Stack.Screen name="HomeTabs" component={HomeTabs} />
                 <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
                 <Stack.Screen name="Settings" component={Settings} />
-
+                <Stack.Screen name="CoachesDetails" component={CoachesDetails}/>
               </>
             ) : (
               <>
@@ -83,30 +85,48 @@ const App = () => {
   );
 };
 
-const HomeTabs = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarStyle: styles.tabBar,
-      tabBarLabelStyle: styles.tabBarLabel,
-      tabBarActiveTintColor: "#000", // Active text color
-      tabBarInactiveTintColor: "#fff", // Inactive text color
-      tabBarIcon: () => null, // Remove icons
-      tabBarButton: (props) => {
-        const isFocused = props.accessibilityState?.selected;
-        return (
-          <View style={[styles.tabButtonContainer, isFocused && styles.activeTab]}>
-            <TouchableOpacity {...props} style={styles.tabButton} />
-          </View>
-        );
-      },
-    })}
-  >
-    <Tab.Screen name="Home" component={HomeScreenWrapper} />
-    <Tab.Screen name="Categories" component={CategoriesWrapper} />
-    <Tab.Screen name="Coaches" component={CoachesWrapper} />
-  </Tab.Navigator>
-);
+const HomeTabs = () => {
+  const isLandscape = width > height; // Check for landscape mode
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarStyle: [styles.tabBar, ], // Adjust bottom position based on landscape mode
+        tabBarShowLabel: false, // Hide default labels to use custom ones
+        tabBarIcon: ({ focused }) => {
+          let iconSource;
+
+          if (route.name === "Home") {
+            iconSource = require("./assets/home.png");
+          } else if (route.name === "Categories") {
+            iconSource = require("./assets/category.png");
+          } else if (route.name === "Coaches") {
+            iconSource = require("./assets/coaches.png");
+          }
+
+          return (
+            <View style={[styles.tabContainer , {bottom: isLandscape ? 0 : 15} ] }>
+              <View style={[styles.iconBackground, focused && styles.activeIconBackground]}>
+                <Image
+                  source={iconSource}
+                  style={[styles.tabIcon, { tintColor: focused ? "#000" : "#fff" }]}
+                />
+              </View>
+              <Text style={[styles.tabLabel, { color: focused ? "#fff" : "#fff" }]}>
+                {route.name}
+              </Text>
+            </View>
+          );
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreenWrapper} />
+      <Tab.Screen name="Categories" component={CategoriesWrapper} />
+      <Tab.Screen name="Coaches" component={CoachesWrapper} />
+    </Tab.Navigator>
+  );
+};
 
 const HomeScreenWrapper = ({ navigation, route }) => (
   <MainLayout>
@@ -133,35 +153,39 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     backgroundColor: "#675987",
-    height: 50, // Adjust the height for better visibility
+    height: 70, // Adjust for better visibility
     position: "absolute",
-    bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row', // Ensure tabs are arranged in a row
-    justifyContent: 'space-around', // Distribute space evenly
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
-  tabBarLabel: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 20, // Adjusted margin for better alignment
-  },
-  tabButtonContainer: {
+  tabContainer: {
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 20,
-    overflow: "hidden",
-    paddingVertical: 5, // Adjust padding for better space distribution
+    width: 90,
   },
-  activeTab: {
+  iconBackground: {
+    width: 90,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+  activeIconBackground: {
     backgroundColor: "#fff",
-    borderRadius: 80,
-    padding: 10,
   },
-  tabButton: {
-    justifyContent: "center",
-    alignItems: "center",
+  tabIcon: {
+    width: 34,
+    height: 34,
+    resizeMode: "contain",
+  },
+  tabLabel: {
+    fontSize: 14,
+    marginTop: 5, // Space between icon and label
+    color: "#fff", // Default white text
   },
 });
 
