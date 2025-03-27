@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, ScrollView, useWindowDimensions, KeyboardAvoidingView, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 
@@ -10,8 +10,9 @@ import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 import { lightTheme, darkTheme } from "../../styles/themes.js"; 
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from "react-redux";
-import { verifyOtp } from '../../redux/authSlice.js'; // Rename to avoid conflict with function name
+import { phoneRegister, verifyOtp } from '../../redux/authSlice.js'; // Rename to avoid conflict with function name
 import axios from 'axios';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
@@ -25,6 +26,8 @@ const OtpScreen = ({ theme = "light" }) => {
 
   // State to manage OTP input
   const [otp, setOtp] = useState(["", "", "", ""]);
+  const [timer, setTimer] = useState(80); // Start at 1:20 (80 seconds)
+  const [isResendAvailable, setIsResendAvailable] = useState(false);
 
   // Refs for OTP inputs
   const inputRefs = useRef([]);
@@ -54,73 +57,135 @@ const OtpScreen = ({ theme = "light" }) => {
     }
     navigation.navigate('Register');
 
-
+    // Dispatch Redux action
+    dispatch(verifyOtp({ userOtp: otpValue, navigation }))
+    .unwrap()
+      .then((response) => {
+        alert("OTP verified successfully! Please check your phone.");
+      })
+      .catch((error) => {
+        alert("Failed to verify OTP: " + error);
+        console.log("Failed to verify OTP: " + error)
+      });
   };
 
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+
+      return () => clearInterval(interval); // Clean up on unmount
+    } else {
+      setIsResendAvailable(true); // Timer reached 0, allow resend
+    }
+  }, [timer]);
+
+
+  const handleResendOtp = async () => {
+    if (isResendAvailable) {
+      // Reset timer to 1:20 (80 seconds) and disable the resend button
+      setTimer(80); // Reset to 1:20
+      setIsResendAvailable(false);
+      alert("Resending OTP...");
+  
+      try {
+        // Retrieve the user's phone number from AsyncStorage
+        const userPhoneNumber = await AsyncStorage.getItem('userPhoneNumber');
+        console.log("userNumber", userPhoneNumber)
+        if (!userPhoneNumber) {
+          throw new Error("User phone number is not available.");
+        }
+  
+        // Dispatch the OTP resend action
+        await dispatch(phoneRegister({ userPhoneNumber, navigation })).unwrap();
+  
+        alert("OTP sent successfully! Please check your phone.");
+      } catch (error) {
+        alert("Failed to send OTP: " + error.message || error);
+        console.log("Failed to send OTP: " + error);
+      }
+    }
+  };
+  
   return (
     <LinearGradient
-      style={styles.login}
-      locations={[0, 1]}
-      colors={["#dacaff", "#f4ffe1"]}
-      useAngle={true}
-      angle={180}
-    >
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-        <ScrollView 
-          contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={[styles.mainContainer, { paddingHorizontal: isTablet ? 30 : 15 }]}>
-            {/* SVG items */}
-            <View style={styles.svgContainer}>
-              <Ellipse1 width={7} height={7} style={styles.svgItem} />
-              <Ellipse2 width={15} height={14} style={styles.svgItem} />
-              <Ellipse3 width={22} height={22} style={styles.svgItem} />
-              <Ellipse4 width={30} height={29} />
-              <LotusYoga width={100} height={171} style={styles.lotusIcon} />
-            </View>
-
-            {/* OTP Frame */}
-            <View style={styles.otpFrameContainer}>
-              <View style={styles.verifyOtpParent}>
-                <Text style={styles.verifyOtp}>Verify OTP</Text>
-                <View style={styles.frameContainer}>
-                  {/* 4 OTP Input Boxes */}
-                  {otp.map((digit, index) => (
-                    <TextInput
-                      key={index}
-                      style={styles.frameItem}
-                      value={digit}
-                      onChangeText={(text) => handleOtpChange(text, index)}
-                      keyboardType="numeric"
-                      maxLength={1}
-                      ref={(ref) => inputRefs.current[index] = ref} // Add refs for each input
-                    />
-                  ))}
-                </View>
-              </View>
-              <Text style={styles.resendOtpInContainer}>
-                <Text style={styles.resendOtpIn}>Resend OTP in</Text>
-                <Text style={styles.text}>: 1:20</Text>
-              </Text>
-            </View>
-
-            {/* Verify OTP Button */}
-            <View style={styles.verifyOtpWrapper}>
-              <TouchableOpacity
-                style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
-                onPress={handleVerifyOtp}
-              >
-                <Text style={[styles.buttonText]}>
-                  Verify Otp
-                </Text>
-              </TouchableOpacity>
-            </View>
+    style={styles.login}
+    locations={[0, 1]}
+    colors={["#dacaff", "#f4ffe1"]}
+    useAngle={true}
+    angle={180}
+  >
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={[styles.mainContainer, { paddingHorizontal: isTablet ? 30 : 15 }]}>
+          {/* SVG items */}
+          <View style={styles.svgContainer}>
+            <Ellipse1 width={7} height={7} style={styles.svgItem} />
+            <Ellipse2 width={15} height={14} style={styles.svgItem} />
+            <Ellipse3 width={22} height={22} style={styles.svgItem} />
+            <Ellipse4 width={30} height={29} />
+            <LotusYoga width={100} height={171} style={styles.lotusIcon} />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </LinearGradient>
-  );
+
+          {/* OTP Frame */}
+          <View style={styles.otpFrameContainer}>
+            <View style={styles.verifyOtpParent}>
+              <Text style={styles.verifyOtp}>Verify OTP</Text>
+              <View style={styles.frameContainer}>
+                {/* 4 OTP Input Boxes */}
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    style={styles.frameItem}
+                    value={digit}
+                    onChangeText={(text) => handleOtpChange(text, index)}
+                    keyboardType="numeric"
+                    maxLength={1}
+                    ref={(ref) => inputRefs.current[index] = ref} // Add refs for each input
+                  />
+                ))}
+              </View>
+            </View>
+
+            {/* Resend OTP Timer */}
+            <Text style={styles.resendOtpInContainer}>
+              <Text style={styles.resendOtpIn}>Resend OTP in</Text>
+              <Text style={styles.text}>
+                : {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, "0")}
+              </Text>
+            </Text>
+
+            {/* Resend OTP Button */}
+            <TouchableOpacity
+              onPress={handleResendOtp}
+              disabled={!isResendAvailable}
+            >
+              <Text style={styles.resendOtpText}>
+                {isResendAvailable ? "Resend OTP" : "Please wait..."}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Verify OTP Button */}
+          <View style={styles.verifyOtpWrapper}>
+            <TouchableOpacity
+              style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
+              onPress={handleVerifyOtp}
+            >
+              <Text style={[styles.buttonText]}>
+                Verify Otp
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  </LinearGradient>
+);
 };
 
 const styles = StyleSheet.create({

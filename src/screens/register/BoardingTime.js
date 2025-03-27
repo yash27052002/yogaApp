@@ -78,6 +78,7 @@ const BoardingTime = ({ theme = "light" }) => {
   };
 
   const onSubmit = async (data) => {
+    dispatch(setBoardingTime(data.boardingTime));  // ✅ Dispatch Redux action
     console.log("Form data:", data);
 
     await AsyncStorage.setItem('boardingTime', data.boardingTime);

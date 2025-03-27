@@ -24,7 +24,7 @@ const VideoPlayer = ({ navigation }) => {
   const [watchedTime, setWatchedTime] = useState(0);
   const [lastRecordedTime, setLastRecordedTime] = useState(0);
   const [skippedSections, setSkippedSections] = useState([]);
-  const videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4";
+  const [videoUrl, setVideoUrl] = useState(null);
   const [loading, setLoading] = useState(false);
 
 
@@ -32,43 +32,87 @@ const VideoPlayer = ({ navigation }) => {
 
   
 
-  console.log("Total Watched Time:", watchedTime);
-  useEffect(() => {
-    console.log("Skipped Sections:", skippedSections);
-  }, [skippedSections]);
-
-  const handleProgress = (data) => {
-    const current = data.currentTime;
+  useEffect(()=>{
+    const fetchVideo = async () => {
+      setLoading(true);
+      try {
+        const token = await AsyncStorage.getItem('jwtToken');
+        if (!token) {
+          console.error('No JWT token found.');
+          return;
+        }
+  
+        console.log('JWT Token:', token); // Log token
+  
+        const response = await axios.get(
+          'http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/preferences/getPreferenceVideos?preferenceId=2',
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        const data =  response.data;
+        console.log('API Response:', JSON.stringify(data, null, 2));
+  
+        if (data?.data?.data?.[0]?.fileData) {
+          setVideoUrl(data.data.data[0].fileData);
+          console.log('Video URL Set:', data.data.data[0].fileData); // Log video URL
+        } else {
+          console.error('Video URL not found in the API response');
+        }
+      } catch (error) {
+        console.error('Error fetching video data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideo();
+  },[])
+  
+  
     
-    // Track watch time
-    if (current > lastRecordedTime && current - lastRecordedTime < 2) {
-      setWatchedTime((prev) => prev + (current - lastRecordedTime));
-    }
-    
-    // Detect skips (if the jump is more than 2 seconds)
-    if (current > lastRecordedTime + 2) {
-      setSkippedSections((prev) => [...prev, { from: lastRecordedTime, to: current }]);
-    }
-    
-    setLastRecordedTime(current);
-    setCurrentTime(current);
-  };
-
-  const handleSeek = (nativeEvent) => {
-    console.log('Seek nativeEvent:', nativeEvent); // Log the entire event
-    const from = nativeEvent.currentTime || 0;  // Get the current time
-    const to = nativeEvent.seekTime || 0;      // Get the seek time (target time)
-
-    console.log("Seeked from:", from, "to:", to); // Debug log to track the times
-    setSkippedSections((prev) => [
-      ...prev,
-      { from, to }
-    ]);
-  };
-
-  const handleLoad = (data) => {
-    setDuration(data.duration);
-  };
+  
+    console.log("Total Watched Time:", watchedTime);
+    useEffect(() => {
+      console.log("Skipped Sections:", skippedSections);
+    }, [skippedSections]);
+  
+    const handleProgress = (data) => {
+      const current = data.currentTime;
+      
+      // Track watch time
+      if (current > lastRecordedTime && current - lastRecordedTime < 2) {
+        setWatchedTime((prev) => prev + (current - lastRecordedTime));
+      }
+      
+      // Detect skips (if the jump is more than 2 seconds)
+      if (current > lastRecordedTime + 2) {
+        setSkippedSections((prev) => [...prev, { from: lastRecordedTime, to: current }]);
+      }
+      
+      setLastRecordedTime(current);
+      setCurrentTime(current);
+    };
+  
+    const handleSeek = (nativeEvent) => {
+      console.log('Seek nativeEvent:', nativeEvent); // Log the entire event
+      const from = nativeEvent.currentTime || 0;  // Get the current time
+      const to = nativeEvent.seekTime || 0;      // Get the seek time (target time)
+  
+      console.log("Seeked from:", from, "to:", to); // Debug log to track the times
+      setSkippedSections((prev) => [
+        ...prev,
+        { from, to }
+      ]);
+    };
+  
+    const handleLoad = (data) => {
+      setDuration(data.duration);
+    };
+  
 
   return (
     <View style={{ flex: 1 }}>
@@ -86,7 +130,7 @@ const VideoPlayer = ({ navigation }) => {
         <View
           style={[
             styles.videoWrapper,
-            { width: width * 0.9, height: isLandscape ? height * 0.7 : height * 0.3 }, // Responsive size
+            { width: width * 1, height: isLandscape ? height * 0.6 : height * 0.2 }, // Responsive size
           ]}
         >
           <Video
@@ -194,7 +238,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     marginTop: 40,
-    marginLeft:30,
+    marginLeft:5,
   },
   video: {
     width: width * 0.9,

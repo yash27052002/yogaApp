@@ -1,28 +1,18 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Image, ScrollView } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, Image, ScrollView , Linking} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Header } from "@react-navigation/stack";
+
+import axios from 'axios';
+
 
 
 const { width, height } = Dimensions.get("window");
+const isTablet = width > 600; // Adjust breakpoint as needed
+const cardsPerPage = isTablet ? 2 : 1;
+const cardWidth = width * 0.9 / cardsPerPage; // Adjust width based on cards per page
 
-const newsData = [
-  {
-    id: "1",
-    title: "Elon Musk on Recession Risk",
-    description: "Elon Musk shares his views on the upcoming economic downturn and its global impact.",
-  },
-  {
-    id: "2",
-    title: "Tech Industry Layoffs",
-    description: "Several tech companies are cutting jobs amid economic uncertainty. Here's what you need to know.",
-  },
-  {
-    id: "3",
-    title: "AI Takes Over Jobs?",
-    description: "Experts weigh in on the impact of AI on job security across multiple industries.",
-  },
-];
 
 const exploreData = [
   { id: 1, title: "Hanuman’s way by Aravindh", image: require('../assets/hanuman.png') },
@@ -41,9 +31,10 @@ const Home = () => {
   const [isLandscape, setIsLandscape] = useState(width > height);
   const [windowWidth, setWindowWidth] = useState(width);
   const [windowHeight, setWindowHeight] = useState(height);
+  const [newsData,setNewsData]=useState([])
 
   const flatListRef = useRef(null);
-useEffect(()=>{
+
   const dataAsync = async ()=>{
     const storedBoardingTime = await AsyncStorage.getItem("boardingTime");
     const userName = await AsyncStorage.getItem("userName");
@@ -52,6 +43,41 @@ useEffect(()=>{
     setBoardingTime(storedBoardingTime);
     setName(userName);
   };
+  const getNews = async () => {
+    try {
+      const token = await AsyncStorage.getItem('jwtToken');
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
+      const response = await axios.get(
+        `http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/news/getNewsByCountry/au`,
+        config
+      );
+  
+      console.log("Response from news API:", response.data);
+  
+      // Extracting the array of news articles
+      const newsArray = response.data?.news?.data?.data || [];
+  
+      // Extracting title and description
+      const newsList = newsArray.map(item =>({
+        title:item.title,
+        description:item.description,
+        url:item.url,
+      }));
+
+      setNewsData(newsList);
+      console.log("Extracted News:", newsList);
+  
+    } catch (error) {
+      console.error("Error from news API:", error);
+    }
+  };
+  
+useEffect(()=>{
+  getNews();
   dataAsync();
 }, [])
 
@@ -135,12 +161,17 @@ useEffect(()=>{
   };
 
   const renderNewsItem = ({ item }) => (
-    <View style={styles.newsCardWrapper}>
-      <View style={styles.newsCard}>
-        <Text style={styles.newsTitle}>{item.title}</Text>
-        <Text style={styles.newsDescription}>{item.description}</Text>
+    <TouchableOpacity 
+      onPress={() => Linking.openURL(item.url)} 
+      activeOpacity={0.7}
+    >
+      <View style={[styles.newsCardWrapper ,{ width: cardWidth }]}>
+        <View style={styles.newsCard}>
+          <Text style={styles.newsTitle}>{item.title}</Text>
+          <Text style={styles.newsDescription}>{item.description}</Text>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const handleLayoutChange = () => {
@@ -227,8 +258,8 @@ useEffect(()=>{
             onScroll={handleScroll}
             renderItem={renderNewsItem}
             keyExtractor={(item) => item.id}
-            snapToInterval={width * 0.9}
-            decelerationRate="fast"
+            snapToInterval={width * 0.9 / cardsPerPage} // Adjust interval based on screen width
+    decelerationRate="fast"
           />
         </View>
       )}
@@ -336,7 +367,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 5,
-    height: 100,  // Adjust height to accommodate content, you may need to tweak
+    height: 150,  // Adjust height to accommodate content, you may need to tweak
     maxWidth: width * 0.9,  // Ensure the card stays within the page width
   },
   newsTitle: {

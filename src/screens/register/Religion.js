@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,9 @@ import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { setReligion } from "../../redux/formSlice.js";
 import { useForm } from "react-hook-form";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from 'axios';
+
 
 const { width, height } = Dimensions.get("window");
 
@@ -38,31 +41,62 @@ const Religion = ({ theme = "light" }) => {
   const [selectedReligion, setSelectedReligion] = useState("Select Religion");
   const [modalVisible, setModalVisible] = useState(false);
 
+  const [religions , setRelegions]= useState([]);
+
+  console.log(religions)
   // Hardcoded list of religions
-  const religions = [
-    "Hinduism",
-    "Islam",
-    "Christianity",
-    "Buddhism",
-    "Sikhism",
-    "Jainism",
-    "Zoroastrianism",
-    "Judaism",
-    "Atheism",
-    "Other",
-  ];
+
+
+  useEffect(() => {
+    const getReligion = async () => {
+      try {
+        const token = await AsyncStorage.getItem('jwtToken');
+        console.log(token);
+  
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        };
+  
+        const response = await axios.get(
+          'http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/religion/getAllReligion',
+          config
+        );
+  
+        const religionData = response.data.data;
+        const religionItems = religionData.map(religion=>({
+          religionName:religion.religionName,
+          religionId:religion.religionId
+          
+        }))
+        // Update the state with an array of religion names
+        setRelegions(religionItems)
+        console.log("Fetched Religions:", relegionItems);
+      } catch (error) {
+        console.error('Error from religion API', error);
+      }
+    };
+  
+    getReligion();
+  }, []);
 
   // Function to handle selection
   const handleSelectReligion = (religion) => {
-    setSelectedReligion(religion);
+    setSelectedReligion(religion.religionName); // Store the name
     setModalVisible(false);
-    setValue("religion", religion);
+    setValue("religion", religion.religionName); // Store the name in form state
+    setValue("religionId", religion.religionId); // Store the ID in form state
   };
+  
 
   const religionData = useSelector((state) => state.user);
 
-  const handleContinue = () => {
-    const { religion } = getValues();
+  const handleContinue = async () => {
+    const religion = getValues("religion");
+  const religionId = getValues("religionId");
+
+await AsyncStorage.setItem("religionId",religionId.toString());
     if (religion && religion !== "Select Religion") {
       dispatch(setReligion(religion));
     }
@@ -134,7 +168,7 @@ const Religion = ({ theme = "light" }) => {
                   style={styles.modalItem}
                   onPress={() => handleSelectReligion(item)}
                 >
-                  <Text style={styles.modalItemText}>{item}</Text>
+                  <Text style={styles.modalItemText}>{item.religionName}</Text>
                 </TouchableOpacity>
               )}
             />

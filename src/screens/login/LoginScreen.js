@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -31,6 +31,9 @@ import { useDispatch } from 'react-redux';
 import { googleLogin, phoneRegister } from '../../redux/authSlice.js'; // Import your action
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import PhoneInput from "react-native-phone-number-input";
+
 const { width } = Dimensions.get("window");
 
 
@@ -53,17 +56,16 @@ const Login = ({ theme = "light" }) => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
-  const [countryCode, setCountryCode] = useState('+1');
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const countryList = [
-    { code: '+1', name: 'United States' },
-    { code: '+44', name: 'United Kingdom' },
-    { code: '+91', name: 'India' },
-    { code: '+61', name: 'Australia' },
-    // Add more countries here
-  ];
+  const phoneInput = useRef(null);
+  const [value, setValue] = useState("");
+  const [formattedValue, setFormattedValue] = useState("");
+  const [countryCode, setCountryCode] = useState("US");
+
+
+console.log("phone number", formattedValue)
 
   // Google Login function
   const GoogleLogin = async () => {
@@ -95,35 +97,38 @@ const Login = ({ theme = "light" }) => {
   
     } catch (error) {
       console.error('Google Sign-In Error:', error);
-      navigation.navigate('Register');
 
     }
   };
 
   // Phone Number Handler
-  const handlePhoneNumber = (data) => {
-    const userPhoneNumber = `${countryCode}${data.username}`.replace(/\s/g, ''); 
-    console.log(userPhoneNumber);
+  const handlePhoneNumber = () => {
+    const userPhoneNumber = formattedValue; 
+    console.log(formattedValue);
     
     if (!userPhoneNumber) {
       alert("Please enter a valid phone number");
       return;
     }
 
-    navigation.navigate('OtpScreen');
+    dispatch(phoneRegister({ userPhoneNumber, navigation }))
+    .unwrap()
+    .then((response) => {
+      alert("OTP sent successfully! Please check your phone.");
+    })
+    .catch((error) => {
+      alert("Failed to send OTP: " + error);
+      console.log("Failed to send OTP: " + error);
+    });
+
+
   };
 
-  const onSelectCountry = (country) => {
-    setCountryCode(country.code);
-    setCountryModalVisible(false);
-  };
 
   // Choose the theme based on the prop
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
 
-  const filteredCountries = countryList.filter(country =>
-    country.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
 
   return (
     <LinearGradient
@@ -156,28 +161,20 @@ const Login = ({ theme = "light" }) => {
                 Login with your Phone Number
               </Text>
 
-              <View style={[styles.inputContainer]}>
                 {/* Country Code Modal */}
-                <TouchableOpacity onPress={() => setCountryModalVisible(true)}>
-                  <Text style={styles.countryCodeText}>{countryCode}</Text>
-                </TouchableOpacity>
-
-                {/* Phone number input */}
-                <Controller
-                  control={control}
-                  name="PhoneNumber"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Phone number"
-                      placeholderTextColor="#9f9e9e"
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="phone-pad"
-                    />
-                  )}
-                />
-              </View>
+                <PhoneInput
+    ref={phoneInput}
+    defaultValue={value}
+    defaultCode={countryCode}
+    layout="first"
+    onChangeText={(text) => setValue(text)}
+    onChangeFormattedText={(text) => setFormattedValue(text)}
+    withDarkTheme
+    withShadow
+    autoFocus
+    containerStyle={styles.phoneInputContainer}  // Apply container style
+    textInputStyle={styles.phoneInputText}  // Apply text input style
+  />
 
               {/* Buttons */}
               <View style={styles.buttonRow}>
@@ -214,39 +211,6 @@ const Login = ({ theme = "light" }) => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Country Code Modal */}
-      <Modal
-        visible={countryModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setCountryModalVisible(false)}
-      >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setCountryModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search country"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            <ScrollView style={styles.countryList}>
-              {filteredCountries.map((country) => (
-                <TouchableOpacity
-                  key={country.code}
-                  onPress={() => onSelectCountry(country)}
-                  style={styles.countryItem}
-                >
-                  <Text style={styles.countryText}>{country.name} ({country.code})</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </LinearGradient>
   );
 };
@@ -292,7 +256,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   inputContainer: {
-    width: width * 0.7,
+    width: 500,
     height: 50,
     borderWidth: 1,
     borderColor: "#000",
@@ -300,17 +264,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  input: {
-    fontSize: 15,
+  phoneInput: {
+    fontSize: 20,
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 300,
     borderRadius: 25,
   },
-  countryCodeText: {
-    fontSize: 15,
-    marginLeft: 15,
-  },
+
   buttonRow: {
     flexDirection: "column",
     alignItems: "center",
@@ -318,7 +279,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    width: width * 0.7,
+    width: 330,
     padding: 12,
     borderRadius: 25,
     alignItems: "center",
@@ -349,6 +310,21 @@ const styles = StyleSheet.create({
     width: "80%",
     padding: 20,
     maxHeight: "70%",
+  },
+  phoneInputContainer: {
+    width: 330,
+    height : 60,
+    backgroundColor: '#fff',
+    borderRadius: 25,  // Full border radius
+    borderWidth: 1,
+    borderColor: '#ccc',
+    overflow: 'hidden',  // Prevent overflow to maintain border-radius
+  },
+  phoneInputText: {
+    paddingHorizontal: 10,
+    height: 100,
+    fontSize: 16,
+    color: '#333',
   },
   
   searchInput: {

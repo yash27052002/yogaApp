@@ -44,6 +44,12 @@ const Navbar = () => {
     try {
       await AsyncStorage.removeItem('userStatus');
       await AsyncStorage.removeItem('randomCode');  
+      await AsyncStorage.removeItem('userPhoneNumber');  // 🔹 Clear stored phone number
+      await AsyncStorage.removeItem('jwtToken');
+      await AsyncStorage.removeItem('religionId');
+
+
+
 
       setDropdownVisible(false); // Close dropdown
     } catch (error) {

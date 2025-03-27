@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useDispatch } from "react-redux";
@@ -13,6 +13,9 @@ import Ellipse3 from "../../assets/Ellipse3.svg";
 import Ellipse4 from "../../assets/Ellipse4.svg";
 import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
 
+import axios from 'axios';
+
+
 const { width } = Dimensions.get("window");
 import { useSelector } from 'react-redux';
 
@@ -20,55 +23,122 @@ const Preference = ({ theme = "light" }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [selectedGods, setSelectedGods] = useState([]);
-  const [preferencesList, setPreferencesList] = useState([
-    { preferencesId: 1, preferencesName: "Vishnu" },
-    { preferencesId: 2, preferencesName: "Shiva" },
-    { preferencesId: 3, preferencesName: "Brahma" },
-    { preferencesId: 4, preferencesName: "Lakshmi" },
-    { preferencesId: 5, preferencesName: "Saraswati" },
-    { preferencesId: 6, preferencesName: "Durga" },
-    { preferencesId: 7, preferencesName: "Ganesha" },
-    { preferencesId: 8, preferencesName: "Krishna" },
-    { preferencesId: 9, preferencesName: "Hanuman" },
-  ]); // Manually added preferences list
-  const [loading, setLoading] = useState(false); // Loading state removed as we no longer fetch data
-
+  const [preferencesList, setPreferencesList] = useState([]);
+  console.log(preferencesList)
   // Get user data from Redux store
   const { name, age, religion, destination, boardingTime, preferences } = useSelector((state) => state.user);
 
+
+  useEffect(() => {
+    const getPreference = async () => {
+      try {
+        const token = await AsyncStorage.getItem("jwtToken");
+        const religionId= parseInt(await AsyncStorage.getItem("religionId"));
+        console.log(token);
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get(
+          `http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/preferences/getPreferenceByReligion?religionId=${religionId}`,
+          config
+        );
+
+        const preferenceData = response.data.data.map((preference) => ({
+          preferenceId: preference.preferencesId,
+          preferenceName: preference.preferencesName,
+        }));
+
+        setPreferencesList(preferenceData);
+        console.log("response from preference api", response.data);
+      } catch (error) {
+        console.error("error getting preference", error);
+      }
+    };
+    getPreference();
+  }, []);
+
   // Toggle selection of preferences
-  const handleSelectGod = (god) => {
+  const handleSelectGod = (preferenceName) => {
     setSelectedGods((prevSelectedGods) => {
-      const updatedSelectedGods = prevSelectedGods.includes(god)
-        ? prevSelectedGods.filter((item) => item !== god)
-        : [...prevSelectedGods, god];
+      let updatedSelectedGods;
   
-      // Log selected preferences' name and ID
-      const selectedPreferences = preferencesList.filter((preference) =>
-        updatedSelectedGods.includes(preference.preferencesName)
-      );
+      if (prevSelectedGods.includes(preferenceName)) {
+        updatedSelectedGods = prevSelectedGods.filter((item) => item !== preferenceName);
+      } else {
+        updatedSelectedGods = [...prevSelectedGods, preferenceName];
+      }
   
-      console.log("Selected Preferences:", selectedPreferences);
-  
+      console.log("Updated Selected Preferences:", updatedSelectedGods); // Debugging Log
       return updatedSelectedGods;
     });
   };
-
-  const storeRandomCode = async () => {
-    const randomCode = Math.random().toString(36).substring(7);
-    try {
-      await AsyncStorage.setItem("randomCode", randomCode);
-      console.log("Random code stored:", randomCode);
-    } catch (error) {
-      console.error("Error storing random code", error);
-    }
-  };
+  
+  
+  
 
   // Submit form and update Redux store
   const onSubmit = async () => {
-    storeRandomCode()
-};
+    const userId = await AsyncStorage.getItem("userId");
+    const jwt = await AsyncStorage.getItem("jwtToken");
 
+    const preferencesFormatted = preferencesList
+    .filter((preference) => selectedGods.includes(preference.preferenceName)) // Fix the key reference
+    .map(({ preferenceId, preferenceName }) => ({
+      preferencesId: preferenceId, // Ensure correct key name
+      preferencesName: preferenceName,
+    }));
+  
+  
+  
+
+    console.log("Formatted Preferences:", preferencesFormatted);
+
+    // Dispatch the updated Redux state before API call
+    dispatch({
+      type: "UPDATE_USER_PREFERENCES",
+      payload: preferencesFormatted,
+    });
+
+    const requestBody = {
+      userId: userId ? parseInt(userId, 10) : null,
+      userName: name,
+      userAge: age,
+      userReligion: religion,
+      userTravelDestination: destination,
+      userTravelBoardingTime: boardingTime.replace(/\u200E|\u200F/g, "").trim(),
+      preferences: preferencesFormatted,
+    };
+
+    console.log("Final Request Body:", JSON.stringify(requestBody, null, 2));
+
+    try {
+      const response = await fetch(
+        "http://43.205.56.106:8080/YogaApp-0.0.1-SNAPSHOT/user/registerUser",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP Error! Status: ${response.status}, Message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("Response Data:", data);
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
+  };
   return (
     <LinearGradient style={styles.login} locations={[0, 1]} colors={["#dacaff", "#f4ffe1"]} useAngle={true} angle={180}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
@@ -85,18 +155,25 @@ const Preference = ({ theme = "light" }) => {
 
             {/* Preference Selection */}
             <View style={styles.godButtonsContainer}>
-              {preferencesList.map((preference) => (
-                <TouchableOpacity
-                  key={preference.preferencesId}
-                  style={[styles.godButton, selectedGods.includes(preference.preferencesName) && styles.selectedButton]}
-                  onPress={() => handleSelectGod(preference.preferencesName)}
-                >
-                  <Text style={[styles.godButtonText, selectedGods.includes(preference.preferencesName) && styles.selectedButtonText]}>
-                    {preference.preferencesName}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+  {preferencesList.map((preference) => (
+    <TouchableOpacity
+      key={preference.preferenceId}
+      style={[
+        styles.godButton,
+        selectedGods.includes(preference.preferenceName) && styles.selectedButton, // Fix here
+      ]}
+      onPress={() => handleSelectGod(preference.preferenceName)} // Fix here
+    >
+      <Text style={[
+        styles.godButtonText,
+        selectedGods.includes(preference.preferenceName) && styles.selectedButtonText, // Fix here
+      ]}>
+        {preference.preferenceName}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</View>
+
 
             {/* Submit Button */}
             <TouchableOpacity style={styles.button} onPress={onSubmit}>

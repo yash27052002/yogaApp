@@ -46,6 +46,7 @@ const RegisterScreen = ({ theme = "light" }) => {
     const { name, age } = getValues();
 
     // Dispatch to Redux
+    dispatch(setUserData({ name, age }));
 
     // Log the updated Redux state
     console.log("Updated Redux State:", userData);
