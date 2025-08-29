@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, Image, Dimensions, Text, Modal, TouchableWithoutFeedback, TextInput } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-import UserProfileIcon from "../assets/userProfile.png";
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  Text,
+  Modal,
+  TouchableWithoutFeedback,
+  TextInput,
+} from 'react-native';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import LotusYoga from '../assets/lotus-yoga_svgrepo.com.svg';
+import UserProfileIcon from '../assets/userProfile.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Searchaltsvgrepocom from "../assets/searchSvg.svg";
+import Searchaltsvgrepocom from '../assets/searchSvg.svg';
 import Orientation from 'react-native-orientation-locker';
 
 const Navbar = () => {
@@ -14,13 +24,13 @@ const Navbar = () => {
   const [selectedNav, setSelectedNav] = useState(route.name);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [searchBarVisible, setSearchBarVisible] = useState(false);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
 
-  const { width } = Dimensions.get("window");
+  const {width} = Dimensions.get('window');
   const isTablet = width >= 768;
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener("state", () => {
+    const unsubscribe = navigation.addListener('state', () => {
       setSelectedNav(route.name);
     });
 
@@ -43,17 +53,14 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userStatus');
-      await AsyncStorage.removeItem('randomCode');  
-      await AsyncStorage.removeItem('userPhoneNumber');  // 🔹 Clear stored phone number
+      await AsyncStorage.removeItem('randomCode');
+      await AsyncStorage.removeItem('userPhoneNumber'); // 🔹 Clear stored phone number
       await AsyncStorage.removeItem('jwtToken');
       await AsyncStorage.removeItem('religionId');
 
-
-
-
       setDropdownVisible(false); // Close dropdown
     } catch (error) {
-      console.error("Error clearing async storage", error);
+      console.error('Error clearing async storage', error);
     }
   };
 
@@ -64,9 +71,8 @@ const Navbar = () => {
   return (
     <View style={styles.header}>
       {/* Lotus Icon - Left */}
-      <TouchableOpacity onPress={()=>navigation.navigate('Home')}>
-      <LotusYoga height={40} width={40} />
-
+      <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+        <LotusYoga height={40} width={40} />
       </TouchableOpacity>
 
       {/* Search Bar (visible on tablet or toggled on mobile) */}
@@ -84,8 +90,14 @@ const Navbar = () => {
 
       {/* Search Icon (only visible on mobile, toggles the search bar) */}
       {!isTablet && (
-        <TouchableOpacity onPress={toggleSearchBar} style={styles.searchIconContainer}>
-          <Searchaltsvgrepocom style={styles.searchIconMobile} width={25} height={25} />
+        <TouchableOpacity
+          onPress={toggleSearchBar}
+          style={styles.searchIconContainer}>
+          <Searchaltsvgrepocom
+            style={styles.searchIconMobile}
+            width={25}
+            height={25}
+          />
         </TouchableOpacity>
       )}
 
@@ -96,7 +108,10 @@ const Navbar = () => {
 
       {/* Dropdown Menu */}
       {dropdownVisible && (
-        <Modal transparent={true} animationType="fade" visible={dropdownVisible}>
+        <Modal
+          transparent={true}
+          animationType="fade"
+          visible={dropdownVisible}>
           <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
             <View style={styles.modalBackdrop} />
           </TouchableWithoutFeedback>
@@ -117,16 +132,16 @@ const Navbar = () => {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
     paddingHorizontal: 20,
     paddingVertical: 10,
     height: 60,
-    width: "100%",
-    justifyContent: "space-between",
+    width: '100%',
+    justifyContent: 'space-between',
     elevation: 5,
-    position: "relative",
+    position: 'relative',
   },
   profileIcon: {
     width: 40,
@@ -138,7 +153,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   dropdownMenu: {
-    position: "absolute",
+    position: 'absolute',
     right: 20,
     top: 60,
     backgroundColor: 'white',
@@ -154,9 +169,9 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f1f1f1",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f1f1',
     paddingVertical: -1,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -167,7 +182,7 @@ const styles = StyleSheet.create({
   searchText: {
     flex: 1,
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     lineHeight: 20,
   },
   searchIconContainer: {

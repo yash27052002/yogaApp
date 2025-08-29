@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -10,77 +10,103 @@ import {
   Platform,
   Modal,
   FlatList,
-} from "react-native";
-import LinearGradient from "react-native-linear-gradient";
-import { useForm, Controller } from "react-hook-form";
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import {useForm, Controller} from 'react-hook-form';
 
 // Import SVG icons
-import Ellipse1 from "../assets/Ellipse1.svg";
-import Ellipse2 from "../assets/Ellipse2.svg";
-import Ellipse3 from "../assets/Ellipse3.svg";
-import Ellipse4 from "../assets/Ellipse4.svg";
-import LotusYoga from "../assets/lotus-yoga_svgrepo.com.svg";
-import { useNavigation } from '@react-navigation/native';
-
+import Ellipse1 from '../assets/Ellipse1.svg';
+import Ellipse2 from '../assets/Ellipse2.svg';
+import Ellipse3 from '../assets/Ellipse3.svg';
+import Ellipse4 from '../assets/Ellipse4.svg';
+import LotusYoga from '../assets/lotus-yoga_svgrepo.com.svg';
+import {useNavigation} from '@react-navigation/native';
 
 // Import themes
-import { lightTheme, darkTheme } from "../styles/themes.js";
+import {lightTheme, darkTheme} from '../styles/themes.js';
 
-const { width, height } = Dimensions.get("window");
+const {width, height} = Dimensions.get('window');
 
-const Loading = ({ theme = "light" }) => {
+const Loading = ({theme = 'light'}) => {
+  const navigation = useNavigation();
 
-    const navigation = useNavigation();
-
-    const { control, handleSubmit, setValue } = useForm();
+  const {control, handleSubmit, setValue} = useForm();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedReligion, setSelectedReligion] = useState("Select Boarding Time");
+  const [selectedReligion, setSelectedReligion] = useState(
+    'Select Boarding Time',
+  );
 
   // List of religions for dropdown
-  const religions = ["Hinduism", "Christianity", "Islam", "Buddhism", "Sikhism", "Jainism", "Others"];
+  const religions = [
+    'Hinduism',
+    'Christianity',
+    'Islam',
+    'Buddhism',
+    'Sikhism',
+    'Jainism',
+    'Others',
+  ];
 
   // Function to handle selection
-  const handleSelectReligion = (religion) => {
+  const handleSelectReligion = religion => {
     setSelectedReligion(religion);
-    setValue("religion", religion); // Set value in react-hook-form
+    setValue('religion', religion); // Set value in react-hook-form
     setModalVisible(false);
   };
 
   // Choose the theme based on the passed prop or context
-  const currentTheme = theme === "dark" ? darkTheme : lightTheme;
+  const currentTheme = theme === 'dark' ? darkTheme : lightTheme;
 
   const isTablet = width >= 768; // Check if the device is a tablet (width >= 768)
 
   // onSubmit function to handle form submission
-  const onSubmit = (data) => {
-    console.log("Selected Religion:", data.religion);
+  const onSubmit = data => {
+    console.log('Selected Religion:', data.religion);
   };
 
   return (
     <LinearGradient
       style={styles.login}
       locations={[0, 1]}
-      colors={["#dacaff", "#f4ffe1"]}
+      colors={['#dacaff', '#f4ffe1']}
       useAngle={true}
-      angle={180}
-    >
+      angle={180}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{flex: 1}}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
             {/* SVG Icons */}
             <View style={styles.svgContainer}>
-              <Ellipse1 width={isTablet ? 15 : 7} height={isTablet ? 15 : 7} style={styles.svgItem} />
-              <Ellipse2 width={isTablet ? 30 : 15} height={isTablet ? 28 : 14} style={styles.svgItem} />
-              <Ellipse3 width={isTablet ? 45 : 22} height={isTablet ? 45 : 22} style={styles.svgItem} />
-              <Ellipse4 width={isTablet ? 60 : 30} height={isTablet ? 58 : 29} />
-.            </View>..
-
+              <Ellipse1
+                width={isTablet ? 15 : 7}
+                height={isTablet ? 15 : 7}
+                style={styles.svgItem}
+              />
+              <Ellipse2
+                width={isTablet ? 30 : 15}
+                height={isTablet ? 28 : 14}
+                style={styles.svgItem}
+              />
+              <Ellipse3
+                width={isTablet ? 45 : 22}
+                height={isTablet ? 45 : 22}
+                style={styles.svgItem}
+              />
+              <Ellipse4
+                width={isTablet ? 60 : 30}
+                height={isTablet ? 58 : 29}
+              />
+              .{' '}
+            </View>
+            ..
             <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}> We are getting things ready for you....</Text>
-
+              <Text style={styles.loadingText}>
+                {' '}
+                We are getting things ready for you....
+              </Text>
             </View>
           </View>
         </ScrollView>
@@ -93,24 +119,24 @@ const Loading = ({ theme = "light" }) => {
 const styles = StyleSheet.create({
   login: {
     flex: 1,
-    width: "100%",
+    width: '100%',
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingBottom: 50,
   },
   container: {
     width: width * 0.9,
-    alignItems: "center",
+    alignItems: 'center',
     gap: 40,
     paddingTop: 20,
   },
   svgContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: -10,
   },
   svgItem: {
@@ -120,68 +146,68 @@ const styles = StyleSheet.create({
     marginTop: -20,
   },
   inputContainer: {
-    width: "100%",
+    width: '100%',
     height: 50,
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: '#000',
     borderRadius: 25,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   dropdown: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dropdownText: {
     fontSize: 16,
-    color: "#000",
+    color: '#000',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
-    width: "80%",
-    backgroundColor: "#fff",
+    width: '80%',
+    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
   },
   option: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: '#ddd',
   },
   optionText: {
     fontSize: 16,
-    color: "#000",
+    color: '#000',
   },
   button: {
-    width: "100%",
+    width: '100%',
     padding: 12,
     borderRadius: 25,
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 10,
   },
   buttonText: {
     fontSize: 15,
-    textAlign: "center",
+    textAlign: 'center',
   },
   loadingText: {
     fontSize: 18,
-    fontFamily: "Oranienbaum-Regular",
-    fontWeight: "700",
+    fontFamily: 'Oranienbaum-Regular',
+    fontWeight: '700',
   },
   loadingContainer: {
     gap: 20,
-    marginBottom:200,
-    alignItems: "center",
+    marginBottom: 200,
+    alignItems: 'center',
   },
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -12,126 +12,146 @@ import {
   FlatList,
   TextInput,
   useWindowDimensions,
-} from "react-native";
-import LinearGradient from "react-native-linear-gradient";
-import { useForm, Controller } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import {useForm, Controller} from 'react-hook-form';
+import {useDispatch, useSelector} from 'react-redux';
 
-import { useNavigation } from '@react-navigation/native';
-import Ellipse1 from "../../assets/Ellipse1.svg";
-import Ellipse2 from "../../assets/Ellipse2.svg";
-import Ellipse3 from "../../assets/Ellipse3.svg";
-import Ellipse4 from "../../assets/Ellipse4.svg";
-import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
-import { setDestination } from "../../redux/formSlice.js";
+import {useNavigation} from '@react-navigation/native';
+import Ellipse1 from '../../assets/Ellipse1.svg';
+import Ellipse2 from '../../assets/Ellipse2.svg';
+import Ellipse3 from '../../assets/Ellipse3.svg';
+import Ellipse4 from '../../assets/Ellipse4.svg';
+import LotusYoga from '../../assets/lotus-yoga_svgrepo.com.svg';
+import {setDestination} from '../../redux/formSlice.js';
 
 // Import themes
-import { lightTheme, darkTheme } from "../../styles/themes.js";
+import {lightTheme, darkTheme} from '../../styles/themes.js';
 
-const { width, height } = Dimensions.get("window");
+const {width, height} = Dimensions.get('window');
 
-const Destination = ({ theme = "light" }) => {
+const Destination = ({theme = 'light'}) => {
   const navigation = useNavigation();
-  const { control, handleSubmit, setValue } = useForm();
+  const {control, handleSubmit, setValue} = useForm();
   const dispatch = useDispatch();
-  const { width, height } = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
   const isTablet = width >= 768;
   const isLandscape = width > height; // Detect landscape orientation
 
-
-  
   // Destination Dropdown States
   const [destinationModalVisible, setDestinationModalVisible] = useState(false);
-  const [selectedDestination, setSelectedDestination] = useState("Select Destination");
-  const [searchText, setSearchText] = useState(""); // Search input state
+  const [selectedDestination, setSelectedDestination] =
+    useState('Select Destination');
+  const [searchText, setSearchText] = useState(''); // Search input state
 
   // List of destinations
   const destinations = [
-    "New York", "London", "Tokyo", "Paris", "Dubai", "Singapore", "Rome", "Bangkok", "Sydney"
+    'New York',
+    'London',
+    'Tokyo',
+    'Paris',
+    'Dubai',
+    'Singapore',
+    'Rome',
+    'Bangkok',
+    'Sydney',
   ];
 
   // Filter destinations based on search input
-  const filteredDestinations = destinations.filter((destination) =>
-    destination.toLowerCase().includes(searchText.toLowerCase())
+  const filteredDestinations = destinations.filter(destination =>
+    destination.toLowerCase().includes(searchText.toLowerCase()),
   );
 
-  const handleSelectDestination = (destination) => {
+  const handleSelectDestination = destination => {
     setSelectedDestination(destination);
-    setValue("destination", destination); // Set value in react-hook-form
+    setValue('destination', destination); // Set value in react-hook-form
     setDestinationModalVisible(false);
-    setSearchText(""); // Reset search text
+    setSearchText(''); // Reset search text
   };
 
-  const currentTheme = theme === "dark" ? darkTheme : lightTheme;
-  const destinationData = useSelector((state) => state.user);
+  const currentTheme = theme === 'dark' ? darkTheme : lightTheme;
+  const destinationData = useSelector(state => state.user);
 
+  const onSubmit = data => {
+    console.log('Form Data:', data); // Check what data is actually being received
 
-
-
-  const onSubmit = (data) => {
-    console.log("Form Data:", data); // Check what data is actually being received
-  
     dispatch(setDestination(data.destination)); // ✅ Ensure Redux gets the correct value
-  
-    console.log("Updated Religion:", destinationData); // This will log the correct selected value
 
-    navigation.navigate("BoardingTime");
+    console.log('Updated Religion:', destinationData); // This will log the correct selected value
+
+    navigation.navigate('BoardingTime');
   };
-  
-  
 
   return (
     <LinearGradient
       style={styles.login}
       locations={[0, 1]}
-      colors={["#dacaff", "#f4ffe1"]}
+      colors={['#dacaff', '#f4ffe1']}
       useAngle={true}
-      angle={180}
-    >
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-      <ScrollView 
-  contentContainerStyle={[styles.scrollContainer, isLandscape && { transform: [{ scale: 1.0 }] }]} 
-  keyboardShouldPersistTaps="handled"
->          <View style={styles.container}>
-<View style={styles.svgContainer}>
+      angle={180}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{flex: 1}}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContainer,
+            isLandscape && {transform: [{scale: 1.0}]},
+          ]}
+          keyboardShouldPersistTaps="handled">
+          {' '}
+          <View style={styles.container}>
+            <View style={styles.svgContainer}>
               <Ellipse1 width={7} height={7} style={styles.svgItem} />
               <Ellipse2 width={15} height={14} style={styles.svgItem} />
               <Ellipse3 width={22} height={22} style={styles.svgItem} />
               <Ellipse4 width={30} height={29} />
               <LotusYoga width={100} height={171} style={styles.lotusIcon} />
             </View>
-            
+
             {/* Destination Dropdown */}
-            <View style={[styles.inputContainer ,{ width: isTablet ? 400 : "100%" }]}>
-              <TouchableOpacity style={styles.dropdown} onPress={() => setDestinationModalVisible(true)}>
+            <View
+              style={[styles.inputContainer, {width: isTablet ? 400 : '100%'}]}>
+              <TouchableOpacity
+                style={styles.dropdown}
+                onPress={() => setDestinationModalVisible(true)}>
                 <Text style={styles.dropdownText}>{selectedDestination}</Text>
               </TouchableOpacity>
             </View>
 
             {/* Destination Modal with Search */}
-            <Modal transparent={true} visible={destinationModalVisible} animationType="fade">
-              <TouchableOpacity style={styles.modalOverlay} onPress={() => setDestinationModalVisible(false)}>
+            <Modal
+              transparent={true}
+              visible={destinationModalVisible}
+              animationType="fade">
+              <TouchableOpacity
+                style={styles.modalOverlay}
+                onPress={() => setDestinationModalVisible(false)}>
                 <View style={styles.modalContainer}>
-                  
                   {/* Search Bar */}
                   <TextInput
                     style={styles.searchInput}
                     placeholder="Search Destination..."
                     placeholderTextColor="#888"
                     value={searchText}
-                    onChangeText={(text) => setSearchText(text)}
+                    onChangeText={text => setSearchText(text)}
                   />
 
                   {/* Destination List */}
                   <FlatList
                     data={filteredDestinations}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity style={styles.option} onPress={() => handleSelectDestination(item)}>
+                    keyExtractor={item => item}
+                    renderItem={({item}) => (
+                      <TouchableOpacity
+                        style={styles.option}
+                        onPress={() => handleSelectDestination(item)}>
                         <Text style={styles.optionText}>{item}</Text>
                       </TouchableOpacity>
                     )}
-                    ListEmptyComponent={<Text style={styles.noResults}>No destinations found</Text>}
+                    ListEmptyComponent={
+                      <Text style={styles.noResults}>
+                        No destinations found
+                      </Text>
+                    }
                   />
                 </View>
               </TouchableOpacity>
@@ -139,9 +159,14 @@ const Destination = ({ theme = "light" }) => {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: currentTheme.buttonBackground , width: isTablet ? 400 : "100%" }]}
-              onPress={handleSubmit(onSubmit)}
-            >
+              style={[
+                styles.button,
+                {
+                  backgroundColor: currentTheme.buttonBackground,
+                  width: isTablet ? 400 : '100%',
+                },
+              ]}
+              onPress={handleSubmit(onSubmit)}>
               <Text style={[styles.buttonText]}>Submit</Text>
             </TouchableOpacity>
           </View>
@@ -155,24 +180,24 @@ const Destination = ({ theme = "light" }) => {
 const styles = StyleSheet.create({
   login: {
     flex: 1,
-    width: "100%",
+    width: '100%',
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingBottom: 50,
   },
   container: {
     width: width * 0.9,
-    alignItems: "center",
+    alignItems: 'center',
     gap: 40,
     paddingTop: 20,
   },
   svgContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: -10,
   },
   svgItem: {
@@ -182,43 +207,43 @@ const styles = StyleSheet.create({
     marginTop: -20,
   },
   inputContainer: {
-    width: "100%",
+    width: '100%',
     height: 50,
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: '#000',
     borderRadius: 25,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   dropdown: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dropdownText: {
     fontSize: 16,
-    color: "#000",
+    color: '#000',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
     width: width * 0.6,
-        backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
   },
   searchInput: {
     height: 40,
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    borderBottomColor: '#ccc',
     paddingHorizontal: 10,
     fontSize: 16,
     marginBottom: 10,
@@ -226,27 +251,27 @@ const styles = StyleSheet.create({
   option: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: '#ddd',
   },
   optionText: {
     fontSize: 16,
-    color: "#000",
+    color: '#000',
   },
   noResults: {
     padding: 12,
-    textAlign: "center",
-    color: "#888",
+    textAlign: 'center',
+    color: '#888',
   },
   button: {
-    width: "100%",
+    width: '100%',
     padding: 12,
     borderRadius: 25,
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 10,
   },
   buttonText: {
     fontSize: 15,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });
 

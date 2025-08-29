@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
@@ -10,71 +10,65 @@ import {
   KeyboardAvoidingView,
   Platform,
   useWindowDimensions,
-} from "react-native";
-import LinearGradient from "react-native-linear-gradient";
-import { useForm, Controller } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux"; // Import Redux
-import { setUserData } from "../../redux/formSlice"; 
-import { useNavigation } from "@react-navigation/native";
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import {useForm, Controller} from 'react-hook-form';
+import {useDispatch, useSelector} from 'react-redux'; // Import Redux
+import {setUserData} from '../../redux/formSlice';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import Ellipse1 from '../../assets/Ellipse1.svg';
+import Ellipse2 from '../../assets/Ellipse2.svg';
+import Ellipse3 from '../../assets/Ellipse3.svg';
+import Ellipse4 from '../../assets/Ellipse4.svg';
+import LotusYoga from '../../assets/lotus-yoga_svgrepo.com.svg';
 
-import Ellipse1 from "../../assets/Ellipse1.svg";
-import Ellipse2 from "../../assets/Ellipse2.svg";
-import Ellipse3 from "../../assets/Ellipse3.svg";
-import Ellipse4 from "../../assets/Ellipse4.svg";
-import LotusYoga from "../../assets/lotus-yoga_svgrepo.com.svg";
+import {lightTheme, darkTheme} from '../../styles/themes.js';
 
-import { lightTheme, darkTheme } from "../../styles/themes.js"; 
+const {width, height} = Dimensions.get('window');
 
-const { width, height } = Dimensions.get("window");
-
-const RegisterScreen = ({ theme = "light" }) => {
-  const { control, handleSubmit,getValues } = useForm();
+const RegisterScreen = ({theme = 'light'}) => {
+  const {control, handleSubmit, getValues} = useForm();
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const userData = useSelector((state) => state.user);
+  const userData = useSelector(state => state.user);
 
-
-  const { width, height } = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
   const isTablet = width >= 768;
   const isLandscape = width > height; // Detect landscape orientation
 
-
   const handleContinue = async () => {
-    const { name, age } = getValues();
+    const {name, age} = getValues();
 
     // Dispatch to Redux
-    dispatch(setUserData({ name, age }));
+    dispatch(setUserData({name, age}));
 
     // Log the updated Redux state
-    console.log("Updated Redux State:", userData);
-    await AsyncStorage.setItem('userName',name);
+    console.log('Updated Redux State:', userData);
+    await AsyncStorage.setItem('userName', name);
 
     // Navigate to next screen
-    navigation.navigate("Religion");
+    navigation.navigate('Religion');
   };
-  const currentTheme = theme === "dark" ? darkTheme : lightTheme;
+  const currentTheme = theme === 'dark' ? darkTheme : lightTheme;
 
   return (
     <LinearGradient
       style={styles.login}
       locations={[0, 1]}
-      colors={["#dacaff", "#f4ffe1"]}
+      colors={['#dacaff', '#f4ffe1']}
       useAngle={true}
-      angle={180}
-    >
+      angle={180}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-<ScrollView 
-  contentContainerStyle={[styles.scrollContainer]} 
-  keyboardShouldPersistTaps="handled"
->
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{flex: 1}}>
+        <ScrollView
+          contentContainerStyle={[styles.scrollContainer]}
+          keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
-          <View style={styles.svgContainer}>
+            <View style={styles.svgContainer}>
               <Ellipse1 width={7} height={7} style={styles.svgItem} />
               <Ellipse2 width={15} height={14} style={styles.svgItem} />
               <Ellipse3 width={22} height={22} style={styles.svgItem} />
@@ -82,14 +76,14 @@ const RegisterScreen = ({ theme = "light" }) => {
               <LotusYoga width={100} height={171} style={styles.lotusIcon} />
             </View>
 
-            <View style={[styles.formContainer ]}>
+            <View style={[styles.formContainer]}>
               {/* Name Input */}
               <View style={styles.inputWrapper}>
                 <Text style={styles.label}>Name</Text>
                 <Controller
                   control={control}
                   name="name"
-                  render={({ field: { onChange, value } }) => (
+                  render={({field: {onChange, value}}) => (
                     <TextInput
                       style={[styles.input]}
                       placeholder="Enter your name"
@@ -102,12 +96,12 @@ const RegisterScreen = ({ theme = "light" }) => {
               </View>
 
               {/* Age Input */}
-              <View style={[styles.inputWrapper ]}>
+              <View style={[styles.inputWrapper]}>
                 <Text style={styles.label}>Age</Text>
                 <Controller
                   control={control}
                   name="age"
-                  render={({ field: { onChange, value } }) => (
+                  render={({field: {onChange, value}}) => (
                     <TextInput
                       style={[styles.input]}
                       placeholder="Enter your age"
@@ -122,9 +116,12 @@ const RegisterScreen = ({ theme = "light" }) => {
 
               <View style={styles.buttonRow}>
                 <TouchableOpacity
-                  style={[styles.button, styles.mobileButton, { backgroundColor: currentTheme.buttonBackground }]}
-                  onPress={handleSubmit(handleContinue)}
-                >
+                  style={[
+                    styles.button,
+                    styles.mobileButton,
+                    {backgroundColor: currentTheme.buttonBackground},
+                  ]}
+                  onPress={handleSubmit(handleContinue)}>
                   <Text style={[styles.buttonText]}>Continue</Text>
                 </TouchableOpacity>
               </View>
@@ -139,24 +136,24 @@ const RegisterScreen = ({ theme = "light" }) => {
 const styles = StyleSheet.create({
   login: {
     flex: 1,
-    width: "100%",
+    width: '100%',
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingBottom: 50,
   },
   container: {
-    width: "90%",
-    alignItems: "center",
+    width: '90%',
+    alignItems: 'center',
     gap: 20,
     paddingTop: 20,
   },
   svgContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: -10,
   },
   svgItem: {
@@ -166,7 +163,7 @@ const styles = StyleSheet.create({
     marginTop: -20,
   },
   formContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     width: width * 0.4,
     marginTop: -10,
   },
@@ -176,10 +173,10 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: width >= 768 ? 18 : 14,
-    color: "#333",
+    color: '#333',
     marginBottom: 5,
     marginLeft: 10,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   input: {
     fontSize: 18,
@@ -188,21 +185,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#fff",
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
   },
   buttonRow: {
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
     marginTop: 20,
   },
   button: {
     width: width * 0.7,
     padding: 12,
     borderRadius: 25,
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 10,
   },
   mobileButton: {
@@ -210,7 +207,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 15,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });
 

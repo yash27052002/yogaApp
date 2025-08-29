@@ -1,20 +1,20 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {createSlice} from '@reduxjs/toolkit';
 
 const initialState = {
-  name: "",
-  age: "",
-  religion: "",
-  destination: "",
-  boardingTime: "",
+  name: '',
+  age: '',
+  religion: '',
+  destination: '',
+  boardingTime: '',
   preferences: [], // Array of selected preferences with ID and name
 };
 
 const userSlice = createSlice({
-  name: "user",
+  name: 'user',
   initialState,
   reducers: {
     setUserData: (state, action) => {
-      return { ...state, ...action.payload }; // Update only provided fields
+      return {...state, ...action.payload}; // Update only provided fields
     },
     setReligion: (state, action) => {
       state.religion = action.payload;

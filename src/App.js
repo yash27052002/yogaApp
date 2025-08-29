@@ -1,9 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, StyleSheet, Dimensions, TouchableOpacity, Platform, Image, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Provider } from 'react-redux';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Platform,
+  Image,
+  Text,
+} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {Provider} from 'react-redux';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LoginScreen from './screens/login/LoginScreen';
 import RegisterScreen from './screens/register/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -24,12 +33,12 @@ import Settings from './screens/Settings';
 import CoachesDetails from './screens/CoachesDetails';
 
 const Tab = createBottomTabNavigator();
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const Stack = createNativeStackNavigator();
-  const isLandscape = width > height;  // Check for landscape mode
+  const isLandscape = width > height; // Check for landscape mode
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -57,13 +66,16 @@ const App = () => {
     <Provider store={store}>
       <SafeAreaView style={styles.safeArea}>
         <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{headerShown: false}}>
             {isAuthenticated ? (
               <>
                 <Stack.Screen name="HomeTabs" component={HomeTabs} />
                 <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
                 <Stack.Screen name="Settings" component={Settings} />
-                <Stack.Screen name="CoachesDetails" component={CoachesDetails}/>
+                <Stack.Screen
+                  name="CoachesDetails"
+                  component={CoachesDetails}
+                />
               </>
             ) : (
               <>
@@ -90,37 +102,44 @@ const HomeTabs = () => {
 
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({route}) => ({
         headerShown: false,
-        tabBarStyle: [styles.tabBar, ], // Adjust bottom position based on landscape mode
+        tabBarStyle: [styles.tabBar], // Adjust bottom position based on landscape mode
         tabBarShowLabel: false, // Hide default labels to use custom ones
-        tabBarIcon: ({ focused }) => {
+        tabBarIcon: ({focused}) => {
           let iconSource;
 
-          if (route.name === "Home") {
-            iconSource = require("./assets/home.png");
-          } else if (route.name === "Categories") {
-            iconSource = require("./assets/category.png");
-          } else if (route.name === "Coaches") {
-            iconSource = require("./assets/coaches.png");
+          if (route.name === 'Home') {
+            iconSource = require('./assets/home.png');
+          } else if (route.name === 'Categories') {
+            iconSource = require('./assets/category.png');
+          } else if (route.name === 'Coaches') {
+            iconSource = require('./assets/coaches.png');
           }
 
           return (
-            <View style={[styles.tabContainer , {bottom: isLandscape ? 0 : 15} ] }>
-              <View style={[styles.iconBackground, focused && styles.activeIconBackground]}>
+            <View style={[styles.tabContainer, {bottom: isLandscape ? 0 : 15}]}>
+              <View
+                style={[
+                  styles.iconBackground,
+                  focused && styles.activeIconBackground,
+                ]}>
                 <Image
                   source={iconSource}
-                  style={[styles.tabIcon, { tintColor: focused ? "#000" : "#fff" }]}
+                  style={[
+                    styles.tabIcon,
+                    {tintColor: focused ? '#000' : '#fff'},
+                  ]}
                 />
               </View>
-              <Text style={[styles.tabLabel, { color: focused ? "#fff" : "#fff" }]}>
+              <Text
+                style={[styles.tabLabel, {color: focused ? '#fff' : '#fff'}]}>
                 {route.name}
               </Text>
             </View>
           );
         },
-      })}
-    >
+      })}>
       <Tab.Screen name="Home" component={HomeScreenWrapper} />
       <Tab.Screen name="Categories" component={CategoriesWrapper} />
       <Tab.Screen name="Coaches" component={CoachesWrapper} />
@@ -128,19 +147,19 @@ const HomeTabs = () => {
   );
 };
 
-const HomeScreenWrapper = ({ navigation, route }) => (
+const HomeScreenWrapper = ({navigation, route}) => (
   <MainLayout>
     <HomeScreen navigation={navigation} route={route} />
   </MainLayout>
 );
 
-const CategoriesWrapper = ({ navigation, route }) => (
+const CategoriesWrapper = ({navigation, route}) => (
   <MainLayout>
     <Categories navigation={navigation} route={route} />
   </MainLayout>
 );
 
-const CoachesWrapper = ({ navigation, route }) => (
+const CoachesWrapper = ({navigation, route}) => (
   <MainLayout>
     <Coaches navigation={navigation} route={route} />
   </MainLayout>
@@ -152,9 +171,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   tabBar: {
-    backgroundColor: "#675987",
+    backgroundColor: '#675987',
     height: 70, // Adjust for better visibility
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -162,30 +181,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     width: 90,
   },
   iconBackground: {
     width: 90,
     height: 50,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
   },
   activeIconBackground: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   tabIcon: {
     width: 34,
     height: 34,
-    resizeMode: "contain",
+    resizeMode: 'contain',
   },
   tabLabel: {
     fontSize: 14,
     marginTop: 5, // Space between icon and label
-    color: "#fff", // Default white text
+    color: '#fff', // Default white text
   },
 });
 

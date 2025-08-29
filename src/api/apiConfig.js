@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://example.com/api"; // Change this based on environment
+const API_BASE_URL = 'https://example.com/api'; // Change this based on environment
 
 export default {
   LOGIN: `${API_BASE_URL}/login`,
